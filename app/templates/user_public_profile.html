@@ -1,0 +1,147 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+    User Profile
+{% endblock %}
+
+{% block subContent %}
+<div class="container profile-spacer d-flex justify-content-center align-items-start min-vh-100">
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-10 col-lg-10">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h4 class="text-success">{{ profile.user_name }}</h4>
+                        <span class="text-muted small">{{ profile.user_role }}</span>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-4 text-center">
+                            <img src="{{ url_for('static', filename=(profile.user_photo or 'images/default_avatar.png')|replace('static/', '')) }}"
+                                 class="rounded-circle border border-success" width="180" height="180" alt="User Photo">
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="fw-bold">{{ profile.user_fname }} {{ profile.user_lname }}</h5>
+                            <p class="text-muted mb-1">📍 {{ profile.user_location }}</p>
+                            <p class="mt-3">{{ profile.user_description }}</p>
+
+                            {% if subscription_status != 'free' %}
+                                <form action="{{ url_for('page.send_message') }}" method="POST" class="mt-4">
+                                    <input type="hidden" name="recipient_id" value="{{ profile.user_id }}">
+                                    <div class="mb-2">
+                                        <textarea class="form-control border-success" name="message_text" rows="3"
+                                                  placeholder="Type your message here..." required></textarea>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-success">Send Message</button>
+                                    </div>
+                                </form>
+                            {% else %}
+                                <div class="alert alert-warning text-center mt-4">
+                                    Only users with a premium subscription can send personal messages.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Blocks -->
+                <div class="mt-5">
+                    <div class="row mb-4">
+                        <!-- Liked Events -->
+                        {% if visibility.get('liked_events') %}
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="bg-white rounded shadow-sm p-4 h-100">
+                                <h5 class="text-success fw-bold">Recently Liked Events</h5>
+                                <ul class="list-group">
+                                    {% for ev in like_stats.recent_liked_events %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                                            <div>
+                                                ❤️ {{ ev.event_title }}<br>
+                                                <small class="text-muted">({{ ev.journey_title }})</small>
+                                            </div>
+                                            {% if ev.created_at %}
+                                                <small class="text-muted">{{ ev.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                            {% endif %}
+                                        </li>
+                                    {% else %}
+                                        <li class="list-group-item text-muted fst-italic">No liked events yet.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                    
+                        <!-- Liked Comments -->
+                        {% if visibility.get('liked_comments') %}
+                        <div class="col-md-6">
+                            <div class="bg-white rounded shadow-sm p-4 h-100">
+                                <h5 class="text-success fw-bold">Recently Liked Comments</h5>
+                                <ul class="list-group mb-0">
+                                    {% for com in like_stats.recent_liked_comments %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <div class="flex-grow-1 pe-3">
+                                                💬 {{ com.comment_text }}<br>
+                                                <small class="text-muted">on {{ com.event_title }}</small>
+                                            </div>
+                                            {% if com.created_at %}
+                                                <div class="text-end text-nowrap small text-muted" style="white-space: nowrap;">
+                                                    {{ com.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                                </div>
+                                            {% endif %}
+                                        </li>
+                                    {% else %}
+                                        <li class="list-group-item text-muted fst-italic">No liked comments yet.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+
+                    <!-- User Comments -->
+
+                    {% if visibility.get('recent_comments') %}
+                    <div class="bg-white rounded shadow-sm p-4 mb-4">
+                        <h5 class="text-success fw-bold">Recent Comments</h5>
+                        <p>Total comments: {{ comment_stats.total_comments }}</p>
+                        <ul class="list-group">
+                            {% for com in comment_stats.recent_comments %}
+                                <li class="list-group-item">
+                                    💬 {{ com.comment_text }} <small class="text-muted">on {{ com.event_title }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item text-muted fst-italic">No comments yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Recent Journeys -->
+                    {% if visibility.get('recent_journeys') %}
+                    <div class="bg-white rounded shadow-sm p-4">
+                        <h5 class="text-success fw-bold">Published Journeys</h5>
+                        <ul class="list-group">
+                            {% for j in recent_journeys %}
+                                <li class="list-group-item">
+                                    <a href="{{ url_for('page.events_page', journey_id=j.journey_id) }}" class="text-decoration-none text-success">
+                                        ✈️ {{ j.journey_title }}
+                                    </a>
+                                    <small class="text-muted">updated {{ j.updated_at.strftime('%d/%m/%Y') }}</small>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item text-muted fst-italic">No journeys yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}

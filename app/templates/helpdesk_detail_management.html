@@ -1,0 +1,256 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+My helpdesk
+{% endblock %}
+
+{% block subContent %}
+<div class="container my-5">
+
+    <!-- Button Group -->
+    <div class="d-flex align-items-center mb-3">
+        <!-- Edit Button: Left-aligned -->
+        <!-- <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#helpdeskEditModal">
+            <i class="bi bi-pencil-square me-1"></i> Edit Helpdesk Request
+        </button> -->
+
+
+        <!-- Right-side buttons: Always fixed to right -->
+        <div class="d-flex ms-auto">
+            <!-- History button -->
+            <a href="#" class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#historyModal">
+                <i class="fas fa-clock-rotate-left me-1"></i> History
+            </a>
+
+            <!-- All List button -->
+            <a href="/helpdesk" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-1"></i> All List
+            </a>
+        </div>
+    </div>
+
+    <!-- Request Details Card -->
+    <div class="card shadow-sm border-success mb-5">
+        <!-- Header -->
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center flex-wrap">
+            <!-- Left: Title -->
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle me-2"></i> Admin Helpdesk Request #{{ detail.request_id }}
+            </h5>
+
+            <!-- Right: Horizontal details -->
+            <div class="d-flex flex-wrap justify-content-end gap-3 small">
+                <!-- <span><strong>User:</strong> {{ detail.request_user_name }}</span>
+            <span><strong>Email:</strong> {{ detail.request_email }}</span> -->
+                <span><strong>Type:</strong> {{ detail.request_type }}</span>
+                <span><strong>Category:</strong> {{ detail.request_category }}</span>
+                <span><strong>Status:</strong> {{ detail.request_status }}</span>
+                <span><strong>Created at:</strong> {{ detail.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                <span><strong>Assigned To:</strong> {{ detail.request_assigned_name or "Unassigned" }}</span>
+            </div>
+        </div>
+        <!--Admin Body -->
+        <div class="card-body">
+            <div class="row">
+
+                <h5 class="card-title">
+                    <span class="text-success">REQUEST TITLE:</span>
+                    <span class="text-dark">{{ detail.request_title }}</span>
+                </h5>
+
+                <!-- Description Card -->
+                <div class="card border-0 mb-3">
+                    <div class="card-body bg-white">
+                        <h6 class="card-subtitle mb-2 text-muted">Description</h6>
+                        <p class="card-text mb-0">{{ detail.request_description }}</p>
+                    </div>
+                </div>
+                <h6 class="mb-0 text-black">
+                    <i class="fas fa-comment-dots me-1 text-black"></i>
+                    <strong>Comments</strong>
+                </h6>
+                <!-- Body layout -->
+                <div class="card-body">
+                    <!-- Comments List -->
+                    <div class="row">
+                        <div class="col-12 p-3 bg-light rounded"
+                            style="height: 200px; overflow-y: auto; border: 1px solid #ccc;">
+                            {% if comments %}
+                            {% for comment in comments %}
+                            <div class="border-bottom pb-2 mb-2">
+                                <small class="text-muted d-block">
+                                    {{ comment.comment_user }}
+                                    • {{ comment.created_at.strftime('%d-%m-%y %H:%M') }}
+                                    • <span class="text-danger fw-bold">{{ comment.request_status }}</span>
+                                </small>
+                                <p class="mb-0">{{ comment.comment_text }}</p>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-muted">No comments yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Comment Form (Bottom-aligned) -->
+                    {% if detail.request_status|lower != 'resolved' %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <form method="POST" action="/helpdesk/add_comment">
+                                <input type="hidden" name="request_id" value="{{ detail.request_id }}">
+
+                                <!-- Comment Textarea -->
+                                <div class="form-floating mb-3">
+                                    <textarea name="comment_text" class="form-control border-success"
+                                        placeholder="Write your comment here..." style="height: 120px;"
+                                        required></textarea>
+                                    <label for="comment_text">Comment</label>
+                                </div>
+
+                                <!-- Status Dropdown + Submit Button -->
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <!-- Dropdown for Status -->
+                                    <select name="request_status" class="form-select w-auto border-success" required>
+                                        <option value="open" selected>Open</option>
+                                        <option value="stalled">Stalled</option>
+                                        <option value="resolved">Resolved</option>
+                                    </select>
+
+                                    <!-- Submit Button -->
+                                    <button type="submit" class="btn btn-success">Post Comment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning mt-3" role="alert">
+                        This request has been <strong>resolved</strong>. You cannot add further comments.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="historyModalLabel">
+                    Helpdesk History - Request #{{ detail.request_id }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <div id="history-content">
+                    <p class="text-muted">Loading history...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="/helpdesk/assign_request">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="assignModalLabel">Assign Request</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="request_id" value="{{ detail.request_id }}">
+                    <div class="mb-3">
+                        <label for="assigned_to" class="form-label">Select Support Staff</label>
+                        <select class="form-select" id="assigned_to" name="request_assigned_to" required>
+                            <option value="">-- Unassigned --</option>
+                            {% for user in support_users %}
+                            <option value="{{ user.user_id }}" {% if user.user_id==detail.request_assigned_to
+                                %}selected{% endif %}>
+                                {{ user.user_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Assign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Assign Modal End -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modalEl = document.getElementById("historyModal");
+
+        modalEl.addEventListener("show.bs.modal", function () {
+            const requestId = {{ detail.request_id | tojson
+        }};
+    const contentEl = document.getElementById("history-content");
+    contentEl.innerHTML = "<p class='text-muted'>Loading history...</p>";
+
+    fetch(`/helpdesk/history?request_id=${requestId}`)
+        .then(response => response.json())
+        .then(data => {
+            const history = data.history;
+
+            if (!Array.isArray(history) || history.length === 0) {
+                contentEl.innerHTML = "<p class='text-muted'>No history records available for this request.</p>";
+                return;
+            }
+
+            let html = '';
+            history.forEach(item => {
+                html += `
+                    <div class="card shadow-sm border-info mb-4">
+                        <div class="card-header bg-info text-white">
+                            <strong>${item.request_user_name || 'Unknown User'}</strong> 
+                            <span class="small ms-2">at ${item.history_created_at}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Title:</strong> ${item.request_title || '-'}</p>
+                                    <p><strong>Type:</strong> ${item.request_type || '-'}</p>
+                                    <p><strong>Category:</strong> ${item.request_category || '-'}</p>
+                                    <p><strong>Status:</strong> ${item.request_status || '-'}</p>
+                                    <p><strong>Priority:</strong> ${item.request_priority || '-'}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Assigned To:</strong> ${item.request_assigned_name || '-'}</p>
+                                    <p><strong>Email:</strong> ${item.request_email || '-'}</p>
+                                    <p><strong>Created At:</strong> ${item.request_created_at || '-'}</p>
+                                    <p><strong>Updated At:</strong> ${item.request_updated_at || '-'}</p>
+                                </div>
+                            </div>
+                            <p class="mt-3"><strong>Description:</strong><br>${item.request_description || '-'}</p>
+                        </div>
+                    </div>`;
+            });
+
+            contentEl.innerHTML = html;
+        })
+        .catch(error => {
+            contentEl.innerHTML = "<p class='text-danger'>Failed to load history.</p>";
+            console.error("Error loading history:", error);
+        });
+    });
+});
+</script>
+
+{% endblock %}

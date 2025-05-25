@@ -1,0 +1,442 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+
+{% block subContent %}
+
+<div class="container-fluid my-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+            <div class="card shadow-lg border-0 rounded p-4 bg-light">
+                <h4 class="display-6 text-success fw-bold">My Personal Travel Journal</h4>
+
+                {% if my_journeys_list[0] is not defined %}
+                <div class="text-center my-4">
+                    <h6 class="display-6 text-muted fw-bold">
+                        <i class="fas fa-map-signs"></i> No journeys have been added yet
+                    </h6>
+                    <p class="text-secondary">Start your first journey now and explore new adventures!</p>
+                </div>
+                {% else %}
+                <!-- Search User Form --->
+                <div class="card-body">
+
+                    <form id="my_journey_search" name="my_journey_search" action="/my_journeys_search" method="get">
+                        <div class="row g-3 justify-content-center">
+                            <div class="col-md-4">
+
+                                <input type="text" class="form-control" id="journey_title" name="journey_title"
+                                    placeholder="Enter journey name" required>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-dark w-100">Search</button>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <a href="{{ url_for('page.my_journeys') }}" class="btn btn-primary w-100">All List</a>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+
+                <!-- Journey List -->
+                <div class="table-responsive mt-4">
+                    <table class="table table-hover table-bordered shadow-sm">
+                        <thead class="table-success text-center">
+                            <tr>
+                                <th style="width: 20%;">Cover image</th>
+                                <th style="width: 20%;">Title</th>
+                                <th style="width: 45%;">Description</th>
+                                <th style="width: 15%;">Start Date</th>
+                                <th style="width: 15%;">Update Date</th>
+                                <th style="width: 5%;">Status</th>
+                                <th style="width: 5%;">Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for my_journeys in my_journeys_list %}
+
+                            <tr class="align-middle">
+                                <td> <img src="{{ my_journeys['journey_photo_url'] or '/static/no_image.png' }}"
+                                        class="img-fluid rounded" alt="Journey image"
+                                        style="width: 100%; height: 200px; object-fit: cover;">
+                                </td>
+
+                                <td class="p-3">
+                                    <a href="{{ url_for('page.events_page', journey_id=my_journeys['journey_id']) }}"
+                                        class="fw-bold text-decoration-none text-success">
+                                        {{ my_journeys['journey_title'] }}
+                                    </a>
+                                </td>
+                                <td class="p-3">{{ my_journeys['journey_description'] }}</td>
+                                <td class="text-center p-3">{{ my_journeys.journey_start_date.strftime('%d/%m/%Y') }}
+                                </td>
+                                <td class="text-center p-3">{{ my_journeys.updated_at.strftime('%d/%m/%Y') }}</td>
+                                <td class="text-center p-3">
+
+                                    <span class="badge 
+                                    {% if my_journeys['journey_status'] in ['public', 'share'] %} bg-success 
+                                    {% else %} bg-danger {% endif %} px-3 py-2" data-bs-toggle="modal" data-bs-target="#statusModal"
+                                        data-journey-id="{{ my_journeys['journey_id'] }}">
+                                        {% if my_journeys['journey_status'] == 'share' %}
+                                        public
+                                        {% else %}
+                                        {{ my_journeys['journey_status'] }}
+                                        {% endif %}
+                                    </span>
+                                    <!-- <span class="badge {% if my_journeys['journey_status'] == 'public' %} bg-success {% else %} bg-danger {% endif %} px-3 py-2" onclick="openStatusChangeForm('{{ my_journeys['journey_status'] }}')">
+                                        {{ my_journeys['journey_status'] }}
+                                    </span> -->
+                                </td>
+                                <td class="text-center p-3">
+                                    <div class="d-flex flex-column justify-content-center align-items-center gap-2">
+                                        <button type="button" class="btn btn-outline-success btn-sm"
+                                            onclick="handleEdit(event)"
+                                            data-journey-id="{{ my_journeys['journey_id'] }}">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                            onclick="handleDelete(event)"
+                                            data-journey-id="{{ my_journeys['journey_id'] }}">
+                                            <i class="bi bi-trash-fill"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>
+                                <!-- <td class="text-center p-3">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                onclick="handleEdit(event)" 
+                                                data-journey-id="{{ my_journeys['journey_id'] }}">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                onclick="handleDelete(event)" 
+                                                data-journey-id="{{ my_journeys['journey_id'] }}">
+                                            <i class="bi bi-trash-fill"></i> Delete
+                                        </button>
+                                    </div>
+                                </td>     -->
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                <!-- Action Buttons -->
+                <div class="d-flex flex-column flex-md-row justify-content-center align-items-center mt-4">
+                    <button class="btn btn-success btn-lg mx-2 d-flex align-items-center gap-2 shadow-sm"
+                        onclick="handleCreateJourney()">
+                        <i class="bi bi-plus-circle"></i> Create Journey
+                    </button>
+                    <span class="mx-2 text-success">or</span>
+                    <button class="btn btn-outline-success btn-lg mx-2 d-flex align-items-center gap-2 shadow-sm"
+                        onclick="handleViewJourneysRedirect()">
+                        <i class="bi bi-eye"></i> View Journeys
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createJourneyModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="createJourneyModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="createIssueForm" class="needs-validation" onsubmit="handleIssueCreateSubmit(event)">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-success" id="createIssueModalTitle">Create Journey</h1>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="createIssueSummary" class="form-label text-success d-flex align-items-center gap-2">
+                            Title
+                        </label>
+                        <input type="text" class="form-control border-success" id="createIssueSummary" name="title"
+                            placeholder="Enter a brief title">
+                        <div id="issueSummaryTip" class="invalid-feedback">Title must contain at least two words</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="createIssueDescription"
+                            class="form-label text-success d-flex align-items-center gap-2">
+                            Description
+                        </label>
+                        <textarea class="form-control border-success" id="createIssueDescription" name="description"
+                            placeholder="Enter detailed description" rows="4"></textarea>
+                        <div id="issueDescTip" class="invalid-feedback">Description must contain at least five words.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="createIssueStartDate"
+                            class="form-label text-success d-flex align-items-center gap-2">
+                            Start Date
+                        </label>
+                        <input type="date" class="form-control border-success" id="createIssueStartDate"
+                            name="start_date" value="">
+                        <div id="issueStartDateTip" class="invalid-feedback">Please enter a valid date in MM/DD/YYYY
+                            format.</div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editJourneyModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="editJourneyModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="editJourneyForm" class="needs-validation" onsubmit="handleEditJourneySubmit(event)">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-success" id="editJourneyModalTitle">Edit Journey</h1>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editJourneyId" name="journey_id" value="">
+                    <div class="mb-3">
+                        <label for="editJourneyTitle" class="form-label text-success d-flex align-items-center gap-2">
+                            Title
+                        </label>
+                        <input type="text" class="form-control border-success" id="editJourneyTitle" name="title"
+                            placeholder="Enter a brief title">
+                        <div class="invalid-feedback">Title must contain at least two words</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editJourneyDescription"
+                            class="form-label text-success d-flex align-items-center gap-2">
+                            Description
+                        </label>
+                        <textarea class="form-control border-success" id="editJourneyDescription" name="description"
+                            placeholder="Enter detailed description" rows="4"></textarea>
+                        <div class="invalid-feedback">Description must contain at least five words.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editJourneyStartDate"
+                            class="form-label text-success d-flex align-items-center gap-2">
+                            Start Date
+                        </label>
+                        <input type="date" class="form-control border-success" id="editJourneyStartDate"
+                            name="start_date" value="">
+                        <div class="invalid-feedback">Please enter a valid start date.</div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="statusForm" action="my_journey_update" method="post">
+                    <input type="hidden" id="journey_id" name="journey_id">
+                    <select id="journey_status" name="journey_status" class="form-select">
+                        <option value="public">Public</option>
+                        <option value="private">Private</option>
+                    </select>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" form="statusForm">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function handleEditJourneySubmit(event) {
+        event.preventDefault();
+
+        const form = document.querySelector('#editJourneyForm');
+        const formData = new FormData(form);
+        const urlEncodedData = new URLSearchParams(formData).toString();
+
+        formFetch('/api/journey/edit', {
+            body: urlEncodedData
+        }).onSuccess((data) => {
+            const redirectUrl = window.location.pathname + "?info=" + encodeURIComponent("journey edit successfully");
+            window.location.href = redirectUrl;
+        }).onBadRequest(data => {
+            const errData = data['err'];
+
+            if (errData.title) {
+                insertErrorTip('#editJourneyTitle', errData.title);
+            }
+            if (errData.description) {
+                insertErrorTip('#editJourneyDescription', errData.description);
+            }
+            if (errData.start_date) {
+                insertErrorTip('#editJourneyStartDate', errData.start_date);
+            }
+        });
+    }
+
+    function handleEdit(event) {
+        const button = event.currentTarget;
+        const journeyId = button.dataset.journeyId;
+
+        const row = button.closest('tr');
+
+        const title = row.children[0].innerText.trim();
+        const description = row.children[1].innerText.trim();
+        const startDate = row.children[2].innerText.trim();
+        function formatDateToInput(dateString) {
+            const dateParts = dateString.split("/");
+            if (dateParts.length === 3) {
+                const day = dateParts[0].padStart(2, '0');
+                const month = dateParts[1].padStart(2, '0');
+                const year = dateParts[2];
+                return `${year}-${month}-${day}`;
+            }
+            return "";
+        }
+
+        document.getElementById('editJourneyId').value = journeyId;
+        document.getElementById('editJourneyTitle').value = title;
+        document.getElementById('editJourneyDescription').value = description;
+        document.getElementById('editJourneyStartDate').value = formatDateToInput(startDate);
+
+        const modal = new bootstrap.Modal(document.getElementById('editJourneyModal'));
+        modal.show();
+    }
+
+    function handleDelete(event) {
+        const button = event.currentTarget;
+        const journeyId = button.getAttribute('data-journey-id');
+        if (confirm("Delete journey will also delete all events. Confirm?")) {
+            const formData = new URLSearchParams();
+            formData.append('journey_id', journeyId);
+            const urlEncodedData = new URLSearchParams(formData).toString();
+            formFetch('/api/journey/delete', {
+                body: urlEncodedData
+            }).onSuccess((data) => {
+                const redirectUrl = window.location.pathname + "?info=" + encodeURIComponent("journey delete successfully");
+                window.location.href = redirectUrl;
+            })
+        }
+    }
+
+    function handleCreateJourney() {
+        var myModal = new bootstrap.Modal(document.getElementById('createJourneyModal'));
+        myModal.show();
+    }
+
+    function handleViewJourneysRedirect() {
+        window.location.href = "/my_journeys"
+    }
+
+    function validateJourneyForm() {
+        let isValid = true;
+
+        const titleField = document.getElementById("createIssueSummary");
+        const descField = document.getElementById("createIssueDescription");
+        const dateField = document.getElementById("createIssueStartDate");
+
+        const titleTip = document.getElementById("issueSummaryTip");
+        const descTip = document.getElementById("issueDescTip");
+        const dateTip = document.getElementById("issueStartDateTip");
+
+        titleField.classList.remove("is-invalid");
+        descField.classList.remove("is-invalid");
+        dateField.classList.remove("is-invalid");
+
+        const title = titleField.value.trim();
+        const titleWords = title.split(/\s+/).filter(word => word.length > 0);
+        if (titleWords.length < 2 || titleWords.length > 50) {
+            titleTip.textContent = "Title must contain 2-50 words.";
+            titleField.classList.add("is-invalid");
+            isValid = false;
+        }
+
+        const description = descField.value.trim();
+        const descWords = description.split(/\s+/).filter(word => word.length > 0);
+        if (descWords.length < 5 || descWords.length > 200) {
+            descTip.textContent = "Description must contain 5-200 words.";
+            descField.classList.add("is-invalid");
+            isValid = false;
+        }
+
+        const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const dateMatch = dateField.value.match(datePattern);
+        if (!dateMatch) {
+            dateTip.textContent = "Please enter a valid date in MM/DD/YYYY format.";
+            dateField.classList.add("is-invalid");
+            isValid = false;
+        } else {
+            const year = parseInt(dateMatch[1], 10);
+            const month = parseInt(dateMatch[2], 10) - 1;
+            const day = parseInt(dateMatch[3], 10);
+            const selectedDate = new Date(year, month, day);
+
+            if (selectedDate.getFullYear() !== year || selectedDate.getMonth() !== month || selectedDate.getDate() !== day) {
+                dateTip.textContent = "Invalid date. Please enter a real date in MM/DD/YYYY format.";
+                dateField.classList.add("is-invalid");
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    function handleIssueCreateSubmit(event) {
+        event.preventDefault();
+
+        if (!validateJourneyForm()) {
+            return;
+        }
+
+        const formData = new FormData(document.querySelector('#createIssueForm'));
+        const urlEncodedData = new URLSearchParams(formData).toString();
+
+        formFetch('/api/journey/create', {
+            body: urlEncodedData
+        }).onSuccess((data) => {
+            const redirectUrl = window.location.pathname + "?info=" + encodeURIComponent("journey created successfully");
+            window.location.href = redirectUrl;
+        }).onBadRequest(data => {
+            const errData = data['err'];
+            if (errData.title) { insertErrorTip('#createIssueSummary', errData.summary); }
+            if (errData.description) { insertErrorTip('#createIssueDescription', errData.description); }
+            if (errData.start_date) { insertErrorTip('#createIssueStartDate', errData.start_date); }
+
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var statusModal = document.getElementById("statusModal");
+        statusModal.addEventListener("show.bs.modal", function (event) {
+            var button = event.relatedTarget;
+            var journeyId = button.getAttribute("data-journey-id");
+            document.getElementById("journey_id").value = journeyId;
+        });
+    }); 
+</script>
+
+{% endblock %}

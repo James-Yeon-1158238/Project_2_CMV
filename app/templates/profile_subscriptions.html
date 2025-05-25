@@ -1,0 +1,178 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+    My Subscriptions
+{% endblock %}
+
+{% block subContent %}
+<div class="container my-5">
+    {% include 'profile_nav.html' %}
+   <!-- Current Subscription Block -->
+        <div class="card shadow mb-5">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Current Premium Access</h5>
+            </div>
+            <div class="card-body">
+                {% if current_subs %}
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Plan</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in current_subs %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ sub.plan_name or "Gift Plan" }}</strong>
+                                        ({{ sub.plan_duration or '—' }} months)
+                                        {% if sub.is_gifted %}
+                                            <span class="badge bg-warning text-dark ms-1">Gift</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ sub.start_date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ sub.end_date.strftime('%d/%m/%Y') if sub.end_date else '—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">You have no active subscriptions.</p>
+                {% endif %}
+
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-3">
+                    {% if max_end_date %}
+                        <div class="alert alert-success mb-3 mb-md-0 px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center" role="alert">
+                            <i class="bi bi-star-fill me-2"></i>
+                            <strong>Premium access </strong>&nbsp; is active until: {{ max_end_date.strftime('%d/%m/%Y') }}
+                        </div>
+                    {% endif %}
+                
+                    <a href="{{ url_for('page.subscription_page') }}" class="btn btn-success ms-md-3 mt-2 mt-md-0">Buy New Subscription</a>
+                </div>
+            </div>
+        </div>
+
+
+   <!-- Subscription History Block -->
+
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Subscription History</h5>
+            </div>
+            <div class="card-body">
+                {% if subscriptions %}
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Plan Details</th>
+                                <th>Payment Date</th>
+                                <th>GST</th>
+                                <th>Total Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in subscriptions %}
+                                <tr>
+                                    <td>
+                                        {% if not sub.is_gifted and sub.plan_price > 0 %}
+                                        <a href="#"
+                                            class="text-success text-decoration-none"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#receiptModal"
+                                            data-plan="{{ sub.plan_name }}"
+                                            data-duration="{{ sub.plan_duration }} months"
+                                            data-start="{{ sub.start_date.strftime('%d/%m/%Y') }}"
+                                            data-end="{{ sub.end_date.strftime('%d/%m/%Y') if sub.end_date else '—' }}"
+                                            data-paid="{{ sub.payment_date.strftime('%d/%m/%Y %H:%M') if sub.payment_date else '—' }}"
+                                            data-card="{{ sub.card_number_last4 }}"
+                                            data-country="{{ sub.billing_country }}"
+                                            data-gst="NZ ${{ '%.2f' % sub.gst_amount if sub.gst_amount else 0 }}"
+                                            data-total="NZ ${{ '%.2f' % sub.payment_total if sub.payment_total else 0 }}">
+                                            <strong>{{ sub.plan_name }}</strong> ({{ sub.plan_duration }} months)
+                                        </a>
+                                                <strong>{{ sub.plan_name }}</strong> ({{ sub.plan_duration }} months)
+                                            </a>
+                                        {% else %}
+                                            <strong>{{ sub.plan_name or "Gift Plan" }}</strong>
+                                            ({{ sub.plan_duration or '—' }} months)
+                                            {% if sub.is_gifted %}
+                                                <span class="badge bg-warning text-dark ms-1">Gift</span>
+                                            {% endif %}
+                                        {% endif %}
+                                        <br>
+                                        {{ sub.start_date.strftime('%d/%m/%Y') }} - 
+                                        {{ sub.end_date.strftime('%d/%m/%Y') if sub.end_date else '—' }}
+                                    </td>
+                                    <td>{{ sub.payment_date.strftime('%d/%m/%Y %H:%M') if sub.payment_date else '—' }}</td>
+                                    <td>
+                                        {% if sub.gst_amount %}
+                                            NZ ${{ '%.2f' % sub.gst_amount }}
+                                        {% else %}
+                                            <em>None</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if sub.payment_total %}
+                                            NZ ${{ '%.2f' % sub.payment_total }}
+                                        {% else %}
+                                            <em>Free</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted text-center">You have no subscriptions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Receipt Modal -->
+        <div class="modal fade" id="receiptModal" tabindex="-1" aria-labelledby="receiptModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-success">
+                <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="receiptModalLabel">Subscription Receipt</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item"><strong>Plan:</strong> <span id="r-plan"></span></li>
+                    <li class="list-group-item"><strong>Duration:</strong> <span id="r-duration"></span></li>
+                    <li class="list-group-item"><strong>Start Date:</strong> <span id="r-start"></span></li>
+                    <li class="list-group-item"><strong>End Date:</strong> <span id="r-end"></span></li>
+                    <li class="list-group-item"><strong>Payment Date:</strong> <span id="r-paid"></span></li>
+                    <li class="list-group-item"><strong>Card:</strong> •••• •••• •••• <span id="r-card"></span></li>
+                    <li class="list-group-item"><strong>Country:</strong> <span id="r-country"></span></li>
+                    <li class="list-group-item"><strong>GST:</strong> <span id="r-gst"></span></li>
+                    <li class="list-group-item"><strong>Total Paid:</strong> <span id="r-total"></span></li>
+                </ul>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              const modal = document.getElementById('receiptModal');
+              modal.addEventListener('show.bs.modal', function (event) {
+                const link = event.relatedTarget;
+                document.getElementById('r-plan').textContent = link.getAttribute('data-plan');
+                document.getElementById('r-duration').textContent = link.getAttribute('data-duration');
+                document.getElementById('r-start').textContent = link.getAttribute('data-start');
+                document.getElementById('r-end').textContent = link.getAttribute('data-end');
+                document.getElementById('r-paid').textContent = link.getAttribute('data-paid');
+                document.getElementById('r-card').textContent = link.getAttribute('data-card');
+                document.getElementById('r-country').textContent = link.getAttribute('data-country');
+                document.getElementById('r-gst').textContent = link.getAttribute('data-gst');
+                document.getElementById('r-total').textContent = link.getAttribute('data-total');
+              });
+            });
+        </script>
+
+{% endblock %}

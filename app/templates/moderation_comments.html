@@ -1,0 +1,167 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+Moderation Panel
+{% endblock %}
+
+{% block subContent %}
+<div class="container my-5">
+    <h2 class="text-center text-warning mb-4">Reported Comments</h2>
+
+    <h4 class="text-success">🔍 Active Reports (Not Hidden)</h4>
+    {% if reports %}
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Report ID</th>
+                    <th>Comment</th>
+                    <th>Reason</th>
+                    <th>Reporter</th>
+                    <th>Reported At</th>
+                    <th>Commenter</th>
+                    <th>Escalated?</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.report_id }}</td>
+                    <td>{{ r.comment_text }}</td>
+                    <td>{{ r.reason }}</td>
+                    <td>{{ r.reporter }}</td>
+                    <td>{{ r.created_at }}</td>
+                    <td>{{ r.commenter_name }}</td>
+                    <td>
+                        {% if r.escalated %}
+                            <span class="badge bg-danger">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex">
+                            
+                        
+                        <!-- Hide available to all staff -->
+                        <form method="POST" action="{{ url_for('page.hide_comment') }}" class="d-inline">
+                            <input type="hidden" name="comment_id" value="{{ r.comment_id }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Hide</button>
+                        </form>
+
+                        <!-- Escalate only visible to moderators -->
+                        {% if not r.escalated and current_user.user_role == "moderator" %}
+                        <form method="POST" action="{{ url_for('page.escalate_comment') }}" class="d-inline">
+                            <input type="hidden" name="report_id" value="{{ r.report_id }}">
+                            <button type="submit" class="btn btn-sm btn-outline-warning ms-2">Escalate</button>
+                        </form>
+                        {% endif %}
+
+                        <!-- Ignore only for editors and admins -->
+                        {% if current_user.user_role in ["editor", "admin"] %}
+                        <form method="POST" action="{{ url_for('page.ignore_comment') }}" class="d-inline">
+                            <input type="hidden" name="report_id" value="{{ r.report_id }}">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary ms-2">Ignore</button>
+                        </form>
+
+                        {% endif %}
+                        </div>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">No active reports found.</p>
+    {% endif %}
+
+    <hr class="my-5">
+
+    <h4 class="text-muted">🗃️ Hidden Comment Reports</h4>
+    {% if hidden_reports %}
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Report ID</th>
+                    <th>Comment</th>
+                    <th>Reason</th>
+                    <th>Reporter</th>
+                    <th>Reported At</th>
+                    <th>Commenter</th>
+                    <th>Escalated?</th>
+                    <th>Moderated By</th>
+                    <th>Moderated At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in hidden_reports %}
+                <tr class="{% if r.is_hidden %}table-secondary{% else %}table-warning{% endif %}">
+                    <td>{{ r.report_id }}</td>
+                    <td class="text-muted">{{ r.comment_text }}</td>
+                    <td>{{ r.reason }}</td>
+                    <td>{{ r.reporter }}</td>
+                    <td>{{ r.created_at }}</td>
+                    <td>{{ r.commenter_name }}</td>
+                    <td>
+                        {% if r.escalated %}
+                            <span class="badge bg-danger">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ r.moderated_by_name or "—" }}</td>
+                    <td>{{ r.moderated_at or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>            
+        </table>
+    {% else %}
+        <p class="text-muted">No hidden comment reports found.</p>
+    {% endif %}
+    {% if current_user.user_role in ["editor", "admin"] %}
+    <hr class="my-5">
+    <h4 class="text-muted">🧾 Ignored Reports</h4>
+    {% if ignored_reports %}
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Report ID</th>
+                    <th>Comment</th>
+                    <th>Reason</th>
+                    <th>Reporter</th>
+                    <th>Reported At</th>
+                    <th>Commenter</th>
+                    <th>Escalated?</th>
+                    <th>Moderated By</th>
+                    <th>Moderated At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in ignored_reports %}
+                <tr class="table-light">
+                    <td>{{ r.report_id }}</td>
+                    <td class="text-muted">{{ r.comment_text }}</td>
+                    <td>{{ r.reason }}</td>
+                    <td>{{ r.reporter }}</td>
+                    <td>{{ r.created_at }}</td>
+                    <td>{{ r.commenter_name }}</td>
+                    <td>
+                        {% if r.escalated %}
+                            <span class="badge bg-danger">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ r.moderated_by_name or "—" }}</td>
+                    <td>{{ r.moderated_at or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">No ignored comment reports found.</p>
+    {% endif %}
+{% endif %}
+</div>
+{% endblock %}

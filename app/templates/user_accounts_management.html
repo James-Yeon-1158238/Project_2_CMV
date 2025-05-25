@@ -1,0 +1,101 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+    Accounts Management
+{% endblock %}
+
+{% block subContent %}
+<div style="min-height: 20px;">
+    {% if success %}
+        <div class="alert alert-success text-center mb-3" role="alert">
+            User settings updated successfully!
+        </div>
+    {% endif %}
+    {% if managing_users|length == 0 and travellers|length == 0 %}
+        <p class="text-center text-muted my-4">No users match your search.</p>
+    {% endif %}
+</div>
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center text-success fw-bold">Users Accounts Management</h2>
+
+    <div class="table-responsive shadow-lg rounded-4 px-4 py-3 my-4 bg-white">
+        <form method="GET" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search_query" class="form-control" placeholder="Search users..." value="{{ request.args.get('search_query', '') }}">
+                <button class="btn btn-success rounded" type="submit">Search</button>
+                <a href="{{ url_for('page.accounts_page') }}" class="btn btn-outline ms-2">Clear</a>
+            </div>
+        </form>
+
+        {% if user.user_role == "admin" %}
+        <!-- Admins, Editors & Moderator table: only for admin -->
+        <h4 class="text-success mt-4">Admins, Editors & Moderator</h4>
+        <table class="table table-bordered table-hover align-middle text-center bg-white bg-opacity-50">
+            <thead class="table-success">
+                <tr>
+                    <th class="bg-success text-white" id="roleHeader1">Role</th>
+                    <th class="bg-success text-white">Username</th>
+                    <th class="bg-success text-white">Email</th>
+                    <th class="bg-success text-white">First Name</th>
+                    <th class="bg-success text-white">Last Name</th>
+                    <th class="bg-success text-white">Location</th>
+                    <th class="bg-success text-white">Status</th>
+                    <th class="bg-success text-white">Gift</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in managing_users %}
+                <tr class="{% if account.user_status == 'blocked' %}table-warning{% elif account.user_status == 'banned' %}table-danger{% endif %}">
+                    {% include 'accounts_row.html' %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        {% if user.user_role in ["admin", "itadmin"] %}
+        <!-- Travellers table: visible to admin and itadmin -->
+        <h4 class="text-success mt-5">Travellers</h4>
+        <table class="table table-bordered table-hover align-middle text-center bg-white bg-opacity-50">
+            <thead class="table-success">
+                <tr>
+                    <th class="bg-success text-white" id="roleHeader2">Role</th>
+                    <th class="bg-success text-white">Username</th>
+                    <th class="bg-success text-white">Email</th>
+                    <th class="bg-success text-white">First Name</th>
+                    <th class="bg-success text-white">Last Name</th>
+                    <th class="bg-success text-white">Location</th>
+                    <th class="bg-success text-white">Status</th>
+                    {% if user.user_role == "admin" %}
+                    <th class="bg-success text-white">Gift</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in travellers %}
+                <tr class="{% if account.user_status == 'blocked' %}table-warning{% elif account.user_status == 'banned' %}table-danger{% endif %}">
+                    {% include 'accounts_row.html' %}
+                    {% if user.user_role == "admin" %}
+                    <td>
+                        <form method="POST" action="{{ url_for('page.gift_subscription') }}" class="d-flex align-items-center gap-1">
+                            <input type="hidden" name="user_id" value="{{ account.user_id }}">
+                            <select name="plan_id" class="form-select form-select-sm w-auto">
+                                {% for plan in gift_plans %}
+                                <option value="{{ plan.plan_id }}">
+                                    {{ plan.plan_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-success">Gift</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

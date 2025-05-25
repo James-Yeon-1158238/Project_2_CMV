@@ -1,0 +1,70 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+Take Requests
+{% endblock %}
+
+{% block subContent %}
+<div class="container my-5">
+    <h4 class="mb-4">Pending Take Requests</h4>
+
+    {% if requests %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-success text-center">
+                <tr>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Assigned</th>
+                    <th style="width: 180px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td class="text-center">{{ req.request_type }}</td>
+                    <td class="text-center">{{ req.request_category }}</td>
+                    <td>{{ req.request_title }}</td>
+                    <td>{{ req.request_description[:80] }}{% if req.request_description|length > 80 %}...{% endif %}</td>
+                    <td class="text-center">{{ req.request_assigned_name or "Unassigned" }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-success me-1" onclick="respondTake({{ req.request_id }}, 'accept')">Accept</button>
+                        <button class="btn btn-sm btn-danger" onclick="respondTake({{ req.request_id }}, 'decline')">Decline</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">There are no pending take requests assigned to you.</p>
+    {% endif %}
+</div>
+
+<script>
+function respondTake(requestId, action) {
+    fetch('/api/helpdesk/respond_take', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ request_id: requestId, action: action })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Action completed successfully.");
+            location.reload();
+        } else {
+            alert("Error: " + data.error);
+        }
+    })
+    .catch(err => {
+        alert("Request failed.");
+        console.error(err);
+    });
+}
+</script>
+{% endblock %}

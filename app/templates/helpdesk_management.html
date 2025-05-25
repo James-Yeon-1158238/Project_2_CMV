@@ -1,0 +1,359 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+My helpdesk
+{% endblock %}
+
+{% block subContent %}
+
+<style>
+    .col-20 {
+        flex: 0 0 20%;
+        max-width: 20%;
+    }
+</style>
+
+<div class="container my-5">
+
+    <div class="row mb-5 justify-content-between">
+        <!-- New -->
+        <div class="col-20">
+            <div class="card shadow text-white bg-danger">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1"><i class="fas fa-star me-1"></i>New</h6>
+                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;" onclick="showStatusModal('new')">
+                        {{ status_summary.get('new', 0) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open -->
+        <div class="col-20">
+            <div class="card shadow text-white bg-success">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1"><i class="fas fa-folder-open me-1"></i>Open</h6>
+                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;" onclick="showStatusModal('open')">
+                        {{ status_summary.get('open', 0) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stalled -->
+        <div class="col-20">
+            <div class="card shadow text-dark bg-warning">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1"><i class="fas fa-pause-circle me-1"></i>Stalled</h6>
+                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;"
+                        onclick="showStatusModal('stalled')">
+                        {{ status_summary.get('stalled', 0) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resolved -->
+        <div class="col-20">
+            <div class="card shadow text-white bg-secondary">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1"><i class="fas fa-check-circle me-1"></i>Resolved</h6>
+                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;"
+                        onclick="showStatusModal('resolved')">
+                        {{ status_summary.get('resolved', 0) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-20">
+            <div class="card shadow text-white bg-primary" style="cursor: pointer;" onclick="toggleTakeRequestsTable()">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1"><i class="fas fa-user-check me-1"></i>Take Requests</h6>
+                    <div class="fw-bold" style="font-size: 1.25rem;">
+                        {{ Pending_assigns|length }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Take Requests Table -->
+    {% if Pending_assigns %}
+    <!-- Pending Take Requests Table -->
+    <div id="takeRequestsTable" class="collapse mt-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Pending Take Requests</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead class="table-success text-center">
+                            <tr>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Assigned</th>
+                                <th style="width: 180px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in Pending_assigns %}
+                            <tr>
+                                <td class="text-center">{{ req.request_type }}</td>
+                                <td class="text-center">{{ req.request_category }}</td>
+                                <td>{{ req.request_title }}</td>
+                                <td>{{ req.request_description[:80] }}{% if req.request_description|length > 80 %}...{%
+                                    endif %}</td>
+                                <td class="text-center">{{ req.request_assigned_name or "Unassigned" }}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-success me-1"
+                                        onclick="respondTake({{ req.request_id }}, 'accept')">Accept</button>
+                                    <button class="btn btn-sm btn-danger"
+                                        onclick="respondTake({{ req.request_id }}, 'decline')">Decline</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Current Helpdesk Requests Block -->
+    <div class="card shadow mb-5 mt-4">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Current Requests</h5>
+
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('page.helpdesk_status_staff', status='all') }}"
+                    class="btn btn-light btn-sm {% if request.args.get('status') == 'all' or not request.args.get('status') %}active{% endif %}">All</a>
+                <a href="{{ url_for('page.helpdesk_status_staff', status='new') }}"
+                    class="btn btn-light btn-sm {% if request.args.get('status') == 'new' %}active{% endif %}">New</a>
+                <a href="{{ url_for('page.helpdesk_status_staff', status='open') }}"
+                    class="btn btn-light btn-sm {% if request.args.get('status') == 'open' %}active{% endif %}">Open</a>
+                <a href="{{ url_for('page.helpdesk_status_staff', status='stalled') }}"
+                    class="btn btn-light btn-sm {% if request.args.get('status') == 'stalled' %}active{% endif %}">Stalled</a>
+                <a href="{{ url_for('page.helpdesk_status_staff', status='resolved') }}"
+                    class="btn btn-light btn-sm {% if request.args.get('status') == 'resolved' %}active{% endif %}">Resolved</a>
+
+            </div>
+        </div>
+        <div class="card-body">
+            {% if requests %}
+            <div style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-success">
+                        <tr>
+                            <!-- <th>User_id</th> -->
+                            <th>User_name</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Priority_define</th>
+                            <th>Created</th>
+                            <th>Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                        <tr data-request-id="{{ request.request_id }}"
+                            class="{% if request.is_premier %}table-warning{% else %}bg-white{% endif %}">
+                            <!-- <td>{{ request.request_user_id | capitalize }}</td> -->
+                            <td>{{ request.request_user_name | capitalize }}</td>
+                            <td>
+                                <span class="badge 
+                            {% if request.request_type == 'bug' %} bg-danger 
+                            {% else %} bg-primary 
+                            {% endif %}">
+                                    {{ request.request_type | capitalize }}
+                                </span>
+                            </td>
+                            <td>{{ request.request_category | capitalize }}</td>
+                            <td>
+                                <a href="{{ url_for('page.help_detail', request_id=request['request_id']) }}"
+                                    class="fw-bold text-decoration-none text-success">
+                                    {{ request.request_title }}
+                                </a>
+                            </td>
+                            <td>
+                                {{ request.request_description[:50] }}
+                                {% if request.request_description|length > 50 %}...{% endif %}
+                            </td>
+
+                            <td>
+                                <span class="badge 
+                                {% if request.request_status == 'new' %} bg-danger 
+                                {% elif request.request_status == 'open' %} bg-success 
+                                {% elif request.request_status == 'stalled' %} bg-warning text-dark 
+                                {% else %} bg-secondary 
+                                {% endif %}">
+                                    {{ request.request_status.replace('_', ' ') | capitalize }}
+                                </span>
+
+                            </td>
+                            <td>
+                                <span class="badge 
+        {% if request.request_priority == 'high' %}bg-danger
+        {% elif request.request_priority == 'medium' %}bg-warning text-dark
+        {% else %}bg-light text-dark
+        {% endif %}">
+                                    {{ request.request_priority | capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" action="/helpdesk/update_priority/{{ request.request_id }}">
+                                    <select name="request_priority" class="form-select form-select-sm"
+                                        onchange="this.form.submit()">
+                                        <option value="high" {% if request.request_priority=='high' %}selected{% endif
+                                            %}>High</option>
+                                        <option value="medium" {% if request.request_priority=='medium' %}selected{%
+                                            endif %}>Medium</option>
+                                        <option value="low" {% if request.request_priority=='low' %}selected{% endif %}>
+                                            Low</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td>{{ request.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td class="text-center">
+                                {% if request.request_assigned_name %}
+                                {{ request.request_assigned_name }}
+                                {% else %}
+                                <div class="d-inline-flex align-items-center">
+                                    {% if request.request_take_candidate_id %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-outline-success ms-2"
+                                        onclick="showAssignModal('{{ request.request_id }}')">Assign</button>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">There are no helpdesk requests at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="assignForm" method="POST" action="/helpdesk/assign">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="assignModalLabel">Assign Request</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="request_id" id="assignRequestId">
+                    <div class="mb-3">
+                        <label for="assignTo" class="form-label">Assign to:</label>
+                        <select class="form-select" name="assign_to" id="assignTo" required>
+                            <option value="">-- Select User --</option>
+                            {% for user in assignable_users %}
+                            <option value="{{ user.user_id }}">{{ user.user_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Assign</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Status Detail Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="statusModalLabel">Status Requests</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="statusModalBody">
+                <!-- content -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function showAssignModal(requestId) {
+        document.getElementById('assignRequestId').value = requestId;
+        var assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+        assignModal.show();
+    }
+
+    function toggleTakeRequests() {
+        const table = document.getElementById("takeRequestsTable");
+        if (table) {
+            table.classList.toggle("d-none"); // Show/Hide the section
+            if (!table.classList.contains("d-none")) {
+                table.scrollIntoView({ behavior: "smooth" }); // Optional scroll
+            }
+        }
+    }
+    function toggleTakeRequestsTable() {
+        var table = new bootstrap.Collapse(document.getElementById("takeRequestsTable"), {
+            toggle: true
+        });
+    }
+
+    function respondTake(requestId, action) {
+        fetch('/helpdesk/respond_take', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ request_id: requestId, action: action })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Action completed successfully.");
+                    location.reload();
+                } else {
+                    alert("Error: " + data.error);
+                }
+            })
+            .catch(err => {
+                alert("Request failed.");
+                console.error(err);
+            });
+    }
+
+    function showStatusModal(status) {
+        fetch(`/helpdesk/status/${status}`)
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('statusModalBody').innerHTML = html;
+                new bootstrap.Modal(document.getElementById('statusModal')).show();
+            })
+            .catch(err => {
+                console.error("Error loading status modal:", err);
+            });
+    }
+
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+
+{% block content %}
+    <div class="container my-auto text-center bg-white bg-opacity-50 rounded p-3">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <div class="apple-style">
+                    <h4 class="text-success"><strong>Welcome to SYNC - your personal Travel Journal</strong></h4>
+                    <p class="lead mb-4 text-success fst-italic">Your personal space to save memories about your adventures, explore travel ideas, and connect with like-minded explorers. Here, you can:
+                        <br>
+                        ✈️ Keep a travel diary – log your journeys and unforgettable moments
+                        <br>
+                        📸 Discover stunning photos – get inspired by breathtaking destinations
+                        <br>
+                        🤝 Meet fellow travelers – share experiences, tips, and hidden gems
+                        <br><br>
+                        Ready to start your journey? Sign up or log in to unlock the world of travel stories! 🚀</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container my-auto">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card mt-4 shadow-sm p-4">
+                    <h5 class="card-title text-center text-success mb-4">Welcome!</h5>
+                    <form id="loginForm" class="needs-validation" onsubmit="handleSubmit(event)">
+                        <div class="mb-3">
+                            <label for="loginUserName" class="form-label text-success d-flex align-items-center gap-2">
+                                User name
+                            </label>
+                            <input type="text" class="form-control border-success" id="loginUserName" name="user_name" placeholder="Enter your username">
+                            <div id="userNameTip" class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label text-success d-flex align-items-center gap-2">
+                                Password
+                            </label>
+                            <input type="password" class="form-control border-success" id="loginPassword" name="password">
+                            <div id="passwordTip" class="invalid-feedback"></div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button id="loginBtn" type="submit" class="btn btn-success">
+                                Log In
+                            </button>
+                            <a href="{{ url_for('page.register_page') }}" class="btn btn-success text-center">
+                                Sign Up
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function handleSubmit(event) {
+            event.preventDefault();
+
+            if (!preSubmitCheck(['loginUserName', 'loginPassword'])) {
+                return;
+            }
+
+            const btn = document.getElementById('loginBtn');
+            const inner = btn.innerHTML;
+            loadButton(btn);
+
+            const formData = new FormData(document.querySelector('#loginForm'));
+            const urlEncodedData = new URLSearchParams(formData).toString();
+
+			console.log("Sending the data:", urlEncodedData); 
+
+
+            formFetch('/api/auth/login', {
+                body: urlEncodedData
+            }).onSuccess(() => {
+                window.location.href = "/";
+            }).onBadRequest(data => {
+                const errData = data.err;
+                if ('user_name' in errData) {
+                    insertErrorTip('#loginUserName', errData.user_name[0]);
+                }
+                if ('password' in errData) {
+                    insertErrorTip('#loginPassword', errData.password[0]);
+                }
+                restoreButton(btn, inner);
+            }).onNotAllowed((data) => {
+                const errData = data.err;
+                restoreButton(btn, inner);
+                showErrorToast(errData, 5000);
+            });
+        }
+    </script>
+
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Sign Up
+{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg p-4">
+                <h3 class="card-title text-center text-success fw-bold mb-4">Create Your Account</h3>
+
+                <!-- Success Message -->
+                <div id="successAlert" class="alert alert-success text-center d-none"></div>
+
+                <form id="signUpForm" class="needs-validation" onsubmit="handleSubmit(event)">
+
+                    <!-- User Name -->
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control border-success form-control-lg" id="userName" name="user_name" placeholder="Enter your username" required>
+                        <label for="userName" class="text-success">User Name</label>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control border-success form-control-lg" id="email" name="email" placeholder="name@example.com" required>
+                        <label for="email" class="text-success">Email</label>
+                    </div>
+
+                    <!-- First Name (Optional) -->
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control border-success form-control-lg" id="firstName" name="first_name" placeholder="Enter your first name">
+                        <label for="firstName" class="text-success">First Name (Optional)</label>
+                    </div>
+
+                    <!-- Last Name (Optional) -->
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control border-success form-control-lg" id="lastName" name="last_name" placeholder="Enter your last name">
+                        <label for="lastName" class="text-success">Last Name (Optional)</label>
+                    </div>
+
+                    <!-- Location (Optional) -->
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control border-success form-control-lg" id="location" name="location" placeholder="Enter your location">
+                        <label for="location" class="text-success">Location (Optional)</label>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-floating mb-3 position-relative">
+                        <input type="password" class="form-control border-success form-control-lg" id="password" name="password" placeholder="Enter password" required>
+                        <label for="password" class="text-success">Password</label>
+                        <div class="form-text text-muted mb-3">
+                            At least 8 characters and contain both letters and numbers
+                        </div>
+                        <span class="position-absolute top-50 end-0 translate-middle-y pe-3" id="togglePassword">
+                            <i class="bi bi-eye-slash text-success"></i>
+                        </span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="form-floating mb-3 position-relative">
+                        <input type="password" class="form-control border-success form-control-lg" id="confirmPassword" placeholder="Confirm password" required>
+                        <label for="confirmPassword" class="text-success">Confirm Password</label>
+                        <span class="position-absolute top-50 end-0 translate-middle-y pe-3" id="togglePasswordC">
+                            <i class="bi bi-eye-slash text-success"></i>
+                        </span>
+                    </div>
+
+                    <button id="rigBtn" type="submit" class="btn btn-success w-100 py-3 btn-lg fw-bold">
+                        Sign Up
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle Password Visibility
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        let passwordInput = document.getElementById("password");
+        let icon = this.querySelector("i");
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.replace("bi-eye-slash", "bi-eye");
+        } else {
+            passwordInput.type = "password";
+            icon.classList.replace("bi-eye", "bi-eye-slash");
+        }
+    });
+
+    document.getElementById("togglePasswordC").addEventListener("click", function () {
+        let passwordInput = document.getElementById("confirmPassword");
+        let icon = this.querySelector("i");
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            icon.classList.replace("bi-eye-slash", "bi-eye");
+        } else {
+            passwordInput.type = "password";
+            icon.classList.replace("bi-eye", "bi-eye-slash");
+        }
+    });
+
+    function handleSubmit(event) {
+        event.preventDefault();
+
+        const form = document.getElementById("signUpForm");
+        const formData = new FormData(form);
+
+        //Make sure the passwords match.
+        const password = formData.get("password");
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        if (password !== confirmPassword) {
+            showError("Passwords do not match!");
+            return;
+        }
+        //Check if the password contains at least one letter and one number.
+        const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).+$/;
+        if (!passwordPattern.test(password)) {
+        showError("Password must contain at least one letter and one number!");
+        return;
+        }
+
+        //Convert FormData to URL encoding format.
+        const urlEncodedData = new URLSearchParams(formData).toString();
+        const btn = document.getElementById("rigBtn");
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Signing Up...';
+        btn.disabled = true;
+
+        fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: urlEncodedData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === "success") {
+                showSuccess("Registration successful! Redirecting to login...");
+                setTimeout(() => {
+                    window.location.href = "/login"; //Return to login page after 2 seconds.
+                }, 2000);
+            } else {
+                let errorMessage = "Registration failed!";
+                if (data.err) {
+                    if (data.err.user_name) {
+                        errorMessage = data.err.user_name.join(", ");
+                    } else if (data.err.email) {
+                        errorMessage = data.err.email.join(", ");
+                    } else if (data.err.first_name) {
+                        errorMessage = data.err.first_name.join(", ");
+                    } else if (data.err.last_name) {
+                        errorMessage = data.err.last_name.join(", ");
+                    } else if (data.err.location) {
+                        errorMessage = data.err.location.join(", ");
+                    }
+                }
+                showError(errorMessage);
+                btn.innerHTML = "Sign Up";
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error("Error during registration:", error);
+            showError("An error occurred. Please try again.");
+            btn.innerHTML = "Sign Up";
+            btn.disabled = false;
+        });
+    }
+
+    //Display failure message.
+    function showError(message) {
+        const errorAlert = document.createElement("div");
+        errorAlert.className = "alert alert-danger text-center";
+        errorAlert.innerHTML = message;
+        
+        const form = document.getElementById("signUpForm");
+        form.parentNode.insertBefore(errorAlert, form);
+        
+        setTimeout(() => errorAlert.remove(), 3000); //Remove after 3 seconds.
+    }
+
+    //Display successful message.
+    function showSuccess(message) {
+        const successAlert = document.getElementById("successAlert");
+        successAlert.innerHTML = message;
+        successAlert.classList.remove("d-none");
+    }
+</script>
+{% endblock %}

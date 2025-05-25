@@ -1,0 +1,27 @@
+{% extends "home_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-success mb-3">📢 Create Announcement</h2>
+    <form method="post" action="/announcements/create">
+        <div class="mb-3">
+            <label class="form-label">Title *</label>
+            <input type="text" class="form-control" name="title" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Content *</label>
+            <textarea class="form-control" name="content" rows="4" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Start Date & Time *</label>
+            <input type="datetime-local" class="form-control" name="start_time" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">End Date & Time (optional)</label>
+            <input type="datetime-local" class="form-control" name="end_time">
+        </div>
+        <button type="submit" class="btn btn-success">Publish</button>
+    </form>
+    
+</div>
+{% endblock %}

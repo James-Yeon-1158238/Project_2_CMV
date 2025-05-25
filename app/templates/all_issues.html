@@ -1,0 +1,529 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+    All Issues
+{% endblock %}
+
+
+{% block subContent %}
+
+
+    <div class="container mt-4">
+        <form id="issueSerchForm" onsubmit="handleIssueSearch(event)">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-3 mb-3">
+                    <label for="search1" class="form-label w-100 text-success d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-braces" viewBox="0 0 16 16">
+                            <path d="M2.114 8.063V7.9c1.005-.102 1.497-.615 1.497-1.6V4.503c0-1.094.39-1.538 1.354-1.538h.273V2h-.376C3.25 2 2.49 2.759 2.49 4.352v1.524c0 1.094-.376 1.456-1.49 1.456v1.299c1.114 0 1.49.362 1.49 1.456v1.524c0 1.593.759 2.352 2.372 2.352h.376v-.964h-.273c-.964 0-1.354-.444-1.354-1.538V9.663c0-.984-.492-1.497-1.497-1.6M13.886 7.9v.163c-1.005.103-1.497.616-1.497 1.6v1.798c0 1.094-.39 1.538-1.354 1.538h-.273v.964h.376c1.613 0 2.372-.759 2.372-2.352v-1.524c0-1.094.376-1.456 1.49-1.456V7.332c-1.114 0-1.49-.362-1.49-1.456V4.352C13.51 2.759 12.75 2 11.138 2h-.376v.964h.273c.964 0 1.354.444 1.354 1.538V6.3c0 .984.492 1.497 1.497 1.6"/>
+                        </svg>
+                        Summary
+                    </label>
+                    <input type="text" id="search1" class="form-control border-success" name="summary" placeholder="Enter Summary ...">
+                </div>
+                <div class="col-12 col-md-3 mb-3">
+                    <label for="search1" class="form-label w-100 text-success d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+                        </svg>
+                        User Name
+                    </label>
+                    <input type="text" id="search2" class="form-control border-success" name="user_name" placeholder="Enter User Name ...">
+                </div>
+                <div class="col-12 col-md-3 mb-3">
+                    <label for="search2" class="form-label w-100 text-success d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-fingerprint" viewBox="0 0 16 16">
+                            <path d="M8.06 6.5a.5.5 0 0 1 .5.5v.776a11.5 11.5 0 0 1-.552 3.519l-1.331 4.14a.5.5 0 0 1-.952-.305l1.33-4.141a10.5 10.5 0 0 0 .504-3.213V7a.5.5 0 0 1 .5-.5Z"/>
+                            <path d="M6.06 7a2 2 0 1 1 4 0 .5.5 0 1 1-1 0 1 1 0 1 0-2 0v.332q0 .613-.066 1.221A.5.5 0 0 1 6 8.447q.06-.555.06-1.115zm3.509 1a.5.5 0 0 1 .487.513 11.5 11.5 0 0 1-.587 3.339l-1.266 3.8a.5.5 0 0 1-.949-.317l1.267-3.8a10.5 10.5 0 0 0 .535-3.048A.5.5 0 0 1 9.569 8m-3.356 2.115a.5.5 0 0 1 .33.626L5.24 14.939a.5.5 0 1 1-.955-.296l1.303-4.199a.5.5 0 0 1 .625-.329"/>
+                            <path d="M4.759 5.833A3.501 3.501 0 0 1 11.559 7a.5.5 0 0 1-1 0 2.5 2.5 0 0 0-4.857-.833.5.5 0 1 1-.943-.334m.3 1.67a.5.5 0 0 1 .449.546 10.7 10.7 0 0 1-.4 2.031l-1.222 4.072a.5.5 0 1 1-.958-.287L4.15 9.793a9.7 9.7 0 0 0 .363-1.842.5.5 0 0 1 .546-.449Zm6 .647a.5.5 0 0 1 .5.5c0 1.28-.213 2.552-.632 3.762l-1.09 3.145a.5.5 0 0 1-.944-.327l1.089-3.145c.382-1.105.578-2.266.578-3.435a.5.5 0 0 1 .5-.5Z"/>
+                            <path d="M3.902 4.222a5 5 0 0 1 5.202-2.113.5.5 0 0 1-.208.979 4 4 0 0 0-4.163 1.69.5.5 0 0 1-.831-.556m6.72-.955a.5.5 0 0 1 .705-.052A4.99 4.99 0 0 1 13.059 7v1.5a.5.5 0 1 1-1 0V7a3.99 3.99 0 0 0-1.386-3.028.5.5 0 0 1-.051-.705M3.68 5.842a.5.5 0 0 1 .422.568q-.044.289-.044.59c0 .71-.1 1.417-.298 2.1l-1.14 3.923a.5.5 0 1 1-.96-.279L2.8 8.821A6.5 6.5 0 0 0 3.058 7q0-.375.054-.736a.5.5 0 0 1 .568-.422m8.882 3.66a.5.5 0 0 1 .456.54c-.084 1-.298 1.986-.64 2.934l-.744 2.068a.5.5 0 0 1-.941-.338l.745-2.07a10.5 10.5 0 0 0 .584-2.678.5.5 0 0 1 .54-.456"/>
+                            <path d="M4.81 1.37A6.5 6.5 0 0 1 14.56 7a.5.5 0 1 1-1 0 5.5 5.5 0 0 0-8.25-4.765.5.5 0 0 1-.5-.865m-.89 1.257a.5.5 0 0 1 .04.706A5.48 5.48 0 0 0 2.56 7a.5.5 0 0 1-1 0c0-1.664.626-3.184 1.655-4.333a.5.5 0 0 1 .706-.04ZM1.915 8.02a.5.5 0 0 1 .346.616l-.779 2.767a.5.5 0 1 1-.962-.27l.778-2.767a.5.5 0 0 1 .617-.346m12.15.481a.5.5 0 0 1 .49.51c-.03 1.499-.161 3.025-.727 4.533l-.07.187a.5.5 0 0 1-.936-.351l.07-.187c.506-1.35.634-2.74.663-4.202a.5.5 0 0 1 .51-.49"/>
+                        </svg>
+                        User ID
+                    </label>
+                    <input type="text" id="search3" class="form-control border-success" name="user_id" placeholder="Enter User ID ...">
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-auto mb-3">
+                    <button class="btn btn-success d-flex align-items-center gap-2" type="submit">
+                        Search
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="col-12 col-md-auto mb-3">
+                    <button class="btn btn-outline-success d-flex align-items-center gap-2" type="reset">
+                        Clear&nbsp;&nbsp;&nbsp;
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eraser" viewBox="0 0 16 16">
+                            <path d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828zm2.121.707a1 1 0 0 0-1.414 0L4.16 7.547l5.293 5.293 4.633-4.633a1 1 0 0 0 0-1.414zM8.746 13.547 3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="mb-3" style="height: 1px; background: linear-gradient(to right, #e0e0e0, #9e9e9e, #e0e0e0);"></div>
+
+        <template id="issue-card-template">
+            <div class="col" data-issue-id="">
+                <div class="card border-success issue-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-success d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-braces" viewBox="0 0 16 16">
+                                <path d="M2.114 8.063V7.9c1.005-.102 1.497-.615 1.497-1.6V4.503c0-1.094.39-1.538 1.354-1.538h.273V2h-.376C3.25 2 2.49 2.759 2.49 4.352v1.524c0 1.094-.376 1.456-1.49 1.456v1.299c1.114 0 1.49.362 1.49 1.456v1.524c0 1.593.759 2.352 2.372 2.352h.376v-.964h-.273c-.964 0-1.354-.444-1.354-1.538V9.663c0-.984-.492-1.497-1.497-1.6M13.886 7.9v.163c-1.005.103-1.497.616-1.497 1.6v1.798c0 1.094-.39 1.538-1.354 1.538h-.273v.964h.376c1.613 0 2.372-.759 2.372-2.352v-1.524c0-1.094.376-1.456 1.49-1.456V7.332c-1.114 0-1.49-.362-1.49-1.456V4.352C13.51 2.759 12.75 2 11.138 2h-.376v.964h.273c.964 0 1.354.444 1.354 1.538V6.3c0 .984.492 1.497 1.497 1.6"/>
+                            </svg>
+                            <span class="issueSummary"></span>
+                        </h5>
+                        <p class="card-text text-success d-flex align-items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+                            </svg>
+                            Created by: 
+                            <img src="" alt="User Avatar" class="rounded-circle cardAvatar" width="20" height="20">
+                            <span class="userName"></span>
+                        </p>
+                        <p class="card-text">
+                            <small class="text-muted d-flex align-items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                                </svg>
+                                Created At: <span class="createdAt"></span>
+                            </small>
+                        </p>
+                        <p class="card-text">
+                            <small class="text-muted d-flex align-items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat" viewBox="0 0 16 16">
+                                    <path d="M2.678 11.894a1 1 0 0 1 .287.801 11 11 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8 8 0 0 0 8 14c3.996 0 7-2.807 7-6s-3.004-6-7-6-7 2.808-7 6c0 1.468.617 2.83 1.678 3.894m-.493 3.905a22 22 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a10 10 0 0 0 .244-.637l.003-.01c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7-3.582 7-8 7a9 9 0 0 1-2.347-.306c-.52.263-1.639.742-3.468 1.105"/>
+                                </svg>
+                                Comments: <span class="commentsCount"></span>
+                            </small>
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="status-badge badge"></span>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-success btn-sm view-details d-flex align-items-center gap-2" onclick="openDetail(this)">
+                                    View
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+                                        <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+                                    </svg>
+                                </button>
+                                <button class="btn btn-warning btn-sm view-details d-flex align-items-center gap-2" onclick="handleIssueStatusChange(this)">
+                                    Status
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+                                        <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <span class="issue-id d-none"></span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <div class="modal fade" id="changeIssueStatusModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="changeIssueStatusModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                    <form id="changeIssueStatusForm" class="needs-validation" onsubmit="handleIssueStatusChangeSubmit(event)">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5 text-success" id="changeIssueStatusModalTitle">Issue Status Change</h1>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <input type="hidden" id="changeIssueStatusModalIssueId" name="issue_id">
+                            </div>
+                            <div class="mb-3">
+                                <select type="text" class="form-control border-success" id="issueStatusList" name="status">
+                                </select>
+                                <div class="invalid-feedback">Not a valid input</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-outline-success">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <template id="commentTemplate">
+            <div class="d-flex flex-column align-items-start mb-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <img src="" id="commentAvatar" alt="User Avatar" class="rounded-circle" width="30" height="30">
+                    <strong class="text-success" id="commentUserName"></strong>
+                </div>
+                <p id="commentContent" class="border border-success bg-success text-white rounded-4 p-2" style="width: 100%; max-width: 100%; overflow-wrap: break-word; white-space: normal; word-wrap: anywhere;">
+                    <!-- Comment content goes here -->
+                </p>
+                <small id="commentTime" class="text-muted align-self-end"></small>
+            </div>
+        </template>
+
+        <div class="modal fade" id="issueDetailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="issueDetailModalTitle" aria-hidden="true" data-issue-id="">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5 text-success" id="issueDetailModalTitle">Issue Detail</h1>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label text-success d-flex align-items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-braces" viewBox="0 0 16 16">
+                                            <path d="M2.114 8.063V7.9c1.005-.102 1.497-.615 1.497-1.6V4.503c0-1.094.39-1.538 1.354-1.538h.273V2h-.376C3.25 2 2.49 2.759 2.49 4.352v1.524c0 1.094-.376 1.456-1.49 1.456v1.299c1.114 0 1.49.362 1.49 1.456v1.524c0 1.593.759 2.352 2.372 2.352h.376v-.964h-.273c-.964 0-1.354-.444-1.354-1.538V9.663c0-.984-.492-1.497-1.497-1.6M13.886 7.9v.163c-1.005.103-1.497.616-1.497 1.6v1.798c0 1.094-.39 1.538-1.354 1.538h-.273v.964h.376c1.613 0 2.372-.759 2.372-2.352v-1.524c0-1.094.376-1.456 1.49-1.456V7.332c-1.114 0-1.49-.362-1.49-1.456V4.352C13.51 2.759 12.75 2 11.138 2h-.376v.964h.273c.964 0 1.354.444 1.354 1.538V6.3c0 .984.492 1.497 1.497 1.6"/>
+                                        </svg>
+                                        Issue Summary
+                                    </label>
+                                    <input type="text" class="form-control border-success" id="detailIssueSummary" readonly disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-success d-flex align-items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-code" viewBox="0 0 16 16">
+                                            <path d="M5.854 4.854a.5.5 0 1 0-.708-.708l-3.5 3.5a.5.5 0 0 0 0 .708l3.5 3.5a.5.5 0 0 0 .708-.708L2.707 8zm4.292 0a.5.5 0 0 1 .708-.708l3.5 3.5a.5.5 0 0 1 0 .708l-3.5 3.5a.5.5 0 0 1-.708-.708L13.293 8z"/>
+                                        </svg>
+                                        Issue Description
+                                    </label>
+                                    <textarea class="form-control border-success" id="detailIssueDescription" rows="4" readonly disabled></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted d-flex align-items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+                                            </svg>
+                                            Created By:
+                                        </small>
+                                        <small class="text-muted">
+                                            <span id="detailIssueCreator" class="createdBy"></span>
+                                        </small>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted d-flex align-items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                                            </svg>
+                                            Created At:
+                                        </small>
+                                        <small class="text-muted">
+                                            <span id="detailIssueCreatedTime" class="createdAt"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-success d-flex align-items-center gap-2">
+                                    Comments
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-square-text" viewBox="0 0 16 16">
+                                        <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2.5a2 2 0 0 0-1.6.8L8 14.333 6.1 11.8a2 2 0 0 0-1.6-.8H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                                        <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6m0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                                    </svg>
+                                </label>
+                                <div class="p-2" style="height: 250px; overflow-y: auto;" id="commentList">
+                                    <!-- Comments will be dynamically inserted here -->
+                                </div>
+                                <div class="text-end">
+                                    <button id="addCommentBtn" class="btn btn-outline-success mt-2" onclick="showCommentForm()">
+                                        Comment
+                                    </button>
+                                </div>
+                                <div id="newCommentSection" class="mt-2 d-none">
+                                    <form id="addCommentForm" class="needs-validation" onsubmit="handlNewCommentSubmit(event)">
+                                        <div class="mb-3">
+                                            <input type="hidden" id="newCommentIssueId" name="issue_id">
+                                        </div>
+                                        <div class="mb-3">
+                                            <textarea class="form-control border-success" id="newComment" name="comment" placeholder="Enter your comment" rows="3"></textarea>
+                                            <div id="commentTip" class="invalid-feedback">Not a valid input</div>
+                                        </div>
+                                        <div class="d-flex justify-content-end gap-2 mb-3">
+                                            <button type="button" id="cancelComment" class="btn btn-outline-danger d-flex align-items-center gap-2" onclick="cancelCommentAction()">
+                                                Cancel
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                                </svg>
+                                            </button>
+                                            <button type="submit" id="submitComment" class="btn btn-outline-success d-flex align-items-center gap-2">
+                                                Submit
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs" id="statusTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link text-success active d-flex align-items-center gap-2" id="all-tab" data-bs-toggle="tab" href="#all" role="tab" aria-controls="all" aria-selected="true">
+                    All
+                    <span id="allCount" class="badge bg-info"></span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link text-success d-flex align-items-center gap-2" id="new-tab" data-bs-toggle="tab" href="#new" role="tab" aria-controls="new" aria-selected="true">
+                    New
+                    <span id="newCount" class="badge bg-danger"></span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link text-success d-flex align-items-center gap-2" id="open-tab" data-bs-toggle="tab" href="#open" role="tab" aria-controls="open" aria-selected="false">
+                    Open
+                    <span id="openCount" class="badge bg-warning"></span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link text-success d-flex align-items-center gap-2" id="stalled-tab" data-bs-toggle="tab" href="#stalled" role="tab" aria-controls="stalled" aria-selected="false">
+                    Stalled
+                    <span id="stalledCount" class="badge bg-secondary"></span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link text-success d-flex align-items-center gap-2" id="resolved-tab" data-bs-toggle="tab" href="#resolved" role="tab" aria-controls="resolved" aria-selected="false">
+                    Resolved
+                    <span id="resolvedCount" class="badge bg-success"></span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3 mb-3" id="statusTabsContent">
+            
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <div class="container">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
+                <div class="container">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="open" role="tabpanel" aria-labelledby="open-tab">
+                <div class="container">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="tab-pane fade" id="resolved" role="tabpanel" aria-labelledby="resolved-tab">
+                <div class="container">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="tab-pane fade" id="stalled" role="tabpanel" aria-labelledby="stalled-tab">
+                <div class="container">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", () => {
+			clearErrorOnInput('#newComment');
+            refillTableData();
+		});
+
+        document.getElementById('issueDetailModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById("newCommentSection").classList.add("d-none");
+            document.getElementById("addCommentBtn").classList.remove("d-none");
+            document.getElementById("newComment").value = "";
+        });
+
+        function handlNewCommentSubmit(event) {
+            event.preventDefault();
+            if (!preSubmitCheck(["newComment"])) {
+                return;
+            }
+            const formData = new FormData(document.querySelector('#addCommentForm'));
+			const urlEncodedData = new URLSearchParams(formData).toString();
+            formFetch('/api/issue/comment', {
+                body: urlEncodedData
+            }).onSuccess((data) => {
+                cancelCommentAction();
+                window.location.reload(true);
+            }).onBadRequest((data) => {
+                const errData = data['err']
+				if ('comment' in errData) { insertErrorTip('#newComment', errData['comment']);}
+            })
+        }
+
+        function showCommentForm() {
+            document.getElementById("newCommentSection").classList.remove("d-none");
+            document.getElementById("addCommentBtn").classList.add("d-none");
+        }
+
+        function cancelCommentAction() {
+            document.getElementById("newCommentSection").classList.add("d-none");
+            document.getElementById("addCommentBtn").classList.remove("d-none");
+        }
+
+        function openDetail(button) {
+            let card = button.closest(".col");
+            if (!card) return;
+            let issueId = card.querySelector(".issue-id")?.textContent.trim();
+            getFetch(`/api/issue/detail?issue_id=${issueId}`, {
+            }).onSuccess((data) => {
+                const { data: issueData } = data;
+                const modal = document.getElementById("issueDetailModal");
+                modal.setAttribute("data-issue-id", issueData.issue_id);
+                document.getElementById("newCommentIssueId").value = issueData.issue_id;
+                document.getElementById("detailIssueSummary").value = issueData.summary;
+                document.getElementById("detailIssueDescription").value = issueData.description;
+                document.getElementById("detailIssueCreator").textContent = issueData.user_name;
+                document.getElementById("detailIssueCreatedTime").textContent = new Date(issueData.created_at).toLocaleString();
+                
+
+                const commentList = document.getElementById("commentList");
+                commentList.innerHTML = "";
+                issueData.commentList.forEach((comment) => {
+                    const commentTemplate = document.getElementById('commentTemplate');
+                    const commentElement = commentTemplate.content.cloneNode(true);
+                    commentElement.querySelector("#commentAvatar").src = comment.user_profile ? comment.user_profile : DETAULT_AVATOR;
+                    commentElement.querySelector("#commentUserName").textContent = comment.user_name;
+                    commentElement.querySelector("#commentContent").textContent = comment.content;
+                    commentElement.querySelector("#commentTime").textContent = new Date(comment.created_at).toLocaleString();
+                    document.getElementById('commentList').appendChild(commentElement);
+                });
+                let bootstrapModal = new bootstrap.Modal(modal);
+                bootstrapModal.show();
+            })
+        }
+
+        function handleIssueSearch(event) {
+            event.preventDefault();
+            refillTableData();
+        }
+
+        function refillTableData() {
+            const formData = new FormData(document.querySelector('#issueSerchForm'));
+			const urlEncodedData = new URLSearchParams(formData).toString();
+			getFetch(`/api/issue/all?${urlEncodedData}`, {
+			}).onSuccess((data) => {
+                const issues = data.data;
+                document.querySelectorAll('.tab-pane .row').forEach(row => row.innerHTML = "");
+                let allCount = 0;
+                let newCount = 0;
+                let openCount = 0;
+                let resolvedCount = 0;
+                let stalledCount = 0;
+
+                issues.forEach(issue => {
+                    const card = createCard(issue);
+                    document.querySelector(`#all .row`).appendChild(card.cloneNode(true));
+                    document.querySelector(`#${issue.issue_status} .row`).appendChild(card.cloneNode(true));
+                    if (issue.issue_status === "new") newCount++;
+                    if (issue.issue_status === "open") openCount++;
+                    if (issue.issue_status === "resolved") resolvedCount++;
+                    if (issue.issue_status === "stalled") stalledCount++;
+                    allCount++;
+                });
+
+                document.querySelector("#allCount").textContent = allCount;
+                document.querySelector("#newCount").textContent = newCount;
+                document.querySelector("#openCount").textContent = openCount;
+                document.querySelector("#resolvedCount").textContent = resolvedCount;
+                document.querySelector("#stalledCount").textContent = stalledCount;
+            })
+        }
+
+        function createCard(issue) {
+            const template = document.querySelector("#issue-card-template");
+            const card = template.content.cloneNode(true);
+            const cardElement = card.querySelector(".col");
+            cardElement.setAttribute("data-issue-id", issue.issue_id);
+            cardElement.querySelector(".issue-id").textContent = issue.issue_id;
+            cardElement.querySelector(".issueSummary").textContent = issue.summary.length > 20 ? issue.summary.substring(0, 20) + " ..." : issue.summary;
+            cardElement.querySelector(".userName").textContent = issue.user_name;
+            cardElement.querySelector(".cardAvatar").src = issue.user_profile ? issue.user_profile : DETAULT_AVATOR;
+            cardElement.querySelector(".createdAt").textContent = new Date(issue.created_at).toLocaleString();
+            cardElement.querySelector(".commentsCount").textContent = issue.comments;
+            const statusBadge = cardElement.querySelector(".status-badge");
+            statusBadge.textContent = issue.issue_status;
+            switch (issue.issue_status.toLowerCase()) {
+                case "new":
+                    statusBadge.classList.add("bg-danger", "text-white");
+                    break;
+                case "open":
+                    statusBadge.classList.add("bg-warning", "text-dark");
+                    break;
+                case "resolved":
+                    statusBadge.classList.add("bg-success", "text-white");
+                    break;
+                case "stalled":
+                    statusBadge.classList.add("bg-secondary", "text-white");
+                    break;
+                default:
+                    statusBadge.classList.add("bg-secondary", "text-white");
+                    break;
+            }
+            return card;
+        }
+
+        function handleIssueStatusChangeSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(document.querySelector('#changeIssueStatusForm'));
+			const urlEncodedData = new URLSearchParams(formData).toString();
+            formFetch('/api/issue/update', {
+				body: urlEncodedData
+			}).onSuccess(data => {
+				refillTableData();
+                bootstrap.Modal.getInstance(document.getElementById('changeIssueStatusModal')).hide();
+			}).onBadRequest(data => {
+				
+			}).onNotAllowed(data => {
+				
+			});
+        }
+
+        function handleIssueStatusChange(button) {
+            let card = button.closest(".col");
+            if (!card) return;
+            let issueId = card.querySelector(".issue-id")?.textContent.trim();
+            document.getElementById('changeIssueStatusModalIssueId').value = issueId;
+            const statusList = document.getElementById('issueStatusList');
+            statusList.innerHTML = `
+                <option value="new">NEW</option>
+                <option value="open">OPEN</option>
+                <option value="stalled">STALLED</option>
+                <option value="resolved">RESOLVED</option>
+            `;
+            const currentStatus = card.querySelector(".status-badge").textContent;
+            const option = statusList.querySelector(`option[value="${currentStatus}"]`);
+            statusList.removeChild(option);
+            var myModal = new bootstrap.Modal(document.getElementById('changeIssueStatusModal'));
+            myModal.show();
+        }
+
+
+    </script>
+
+{% endblock %}

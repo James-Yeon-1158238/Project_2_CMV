@@ -1,0 +1,906 @@
+{% extends "home_base.html" %}
+
+{% block title %}
+    {{ journey.journey_title }} – Events
+{% endblock %}
+
+
+{% block subContent %}
+<div class="container my-4">
+    <div class="card shadow border-0 p-4 position-relative">
+        <span class="position-absolute top-0 end-0 m-3 badge {% if journey.journey_status in ['public', 'share'] %}bg-success{% else %}bg-danger{% endif %} px-3 py-2">
+           {% if journey.journey_status == 'share' %}
+                                        public
+                                        {% else %}
+           {{ journey.journey_status|capitalize }}
+                                        {% endif %}
+           
+        </span>
+        
+        <h4 class="text-success fw-bold mb-2">{{ journey.journey_title }}</h4>
+        <p class="mb-1"><strong>Start Date:</strong> {{ journey.journey_start_date.strftime('%d/%m/%Y') }}</p>
+        <p class="text-muted mb-0">{{ journey.journey_description }}</p>
+        <p class="mb-1"><strong>Created by:</strong> {{ creator_name }}</p>
+    </div>
+</div>
+
+<div class="modal fade" id="createEventModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="createEventModalTitle" aria-hidden="true" data-journey-id="">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-success" id="createEventModalTitle">Create Event</h1>
+            </div>
+            <form id="createEventForm" class="needs-validation">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="hidden" id="journetId" name="journey_id" value="{{ journey.journey_id }}">
+                            <div class="mb-3">
+                                <label for="createEventTitle" class="form-label text-success">
+                                    Event Title
+                                </label>
+                                <input type="text" class="form-control border-success" id="createEventTitle" name="event_title" placeholder="Enter an event title">
+                                <div id="eventTitleTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createEventDescription" class="form-label text-success">
+                                    Event Description
+                                </label>
+                                <textarea class="form-control border-success" id="createEventDescription" rows="4" name="event_desc" placeholder="Enter an event description"></textarea>
+                                <div id="eventDescTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="eventStartDate" class="form-label text-success">
+                                    Event Start Date
+                                </label>
+                                <input type="datetime-local" class="form-control border-success" id="createEventStartDate" name="event_start_date" value="">
+                                <div id="eventStartDateTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="eventEndDate" class="form-label text-success">
+                                    Event End Date
+                                </label>
+                                <input type="datetime-local" class="form-control border-success" id="createEventEndDate" name="event_end_date" value="">
+                                <div id="eventEndDateTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="eventLocation" class="form-label text-success">
+                                    Event Location
+                                </label>
+                                <input type="text" class="form-control border-success" id="createEventLocation" name="event_location" list="locationOptions" placeholder="Enter or select a location">
+                                <div id="eventLocationTip" class="invalid-feedback"></div>
+                                <datalist id="locationOptions"></datalist>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex flex-column justify-content-between align-items-center">
+                            <div class="mb-3">
+                                <label class="form-label text-success">Event Photos</label>
+                                <div id="photoUploadArea"></div>
+                                <small class="form-text text-muted">Drag & drop images or click to upload. You can reorder them.</small>
+                                <div id="eventPhotoTip" class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-outline-success">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editEventModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editEventModalTitle" aria-hidden="true" data-journey-id="">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-success" id="editEventModalTitle">Edit Event</h1>
+            </div>
+            <form id="editEventForm" class="needs-validation">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="hidden" id="eventId" name="event_id" value="">
+                            <input type="hidden" id="editJourneyId" name="journey_id" value="">
+                            <div class="mb-3">
+                                <label for="editEventTitle" class="form-label text-success">
+                                    Event Title
+                                </label>
+                                <input type="text" class="form-control border-success" id="editEventTitle" name="event_title" placeholder="Enter an event title">
+                                <div id="eventTitleTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEventDescription" class="form-label text-success">
+                                    Event Description
+                                </label>
+                                <textarea class="form-control border-success" id="editEventDescription" rows="4" name="event_desc" placeholder="Enter an event description"></textarea>
+                                <div id="eventDescTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEventStartDate" class="form-label text-success">
+                                    Event Start Date
+                                </label>
+                                <input type="datetime-local" class="form-control border-success" id="editEventStartDate" name="event_start_date" value="">
+                                <div id="eventStartDateTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEventEndDate" class="form-label text-success">
+                                    Event End Date
+                                </label>
+                                <input type="datetime-local" class="form-control border-success" id="editEventEndDate" name="event_end_date" value="">
+                                <div id="eventEndDateTip" class="invalid-feedback"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEventLocation" class="form-label text-success">
+                                    Event Location
+                                </label>
+                                <input type="text" class="form-control border-success" id="editEventLocation" name="event_location" list="locationOptions" placeholder="Enter or select a location">
+                                <div id="eventLocationTip" class="invalid-feedback"></div>
+                                <datalist id="locationOptions"></datalist>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex flex-column justify-content-between align-items-center">
+                            <div class="mb-3">
+                                <label class="form-label text-success">Event Photos</label>
+                                <div id="editPhotoUploadArea"></div>
+                                <small class="form-text text-muted">Drag & drop images or click to upload. You can reorder them.</small>
+                                <div id="eventPhotoTip" class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-outline-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container my-auto text-center bg-white bg-opacity-50 rounded p-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+            <div class="apple-style">
+                {% if is_owner %}
+                    <div class="d-flex align-items-start mb-3">
+                        <button type="button" class="btn btn-success" onclick="onCreactEventClick()">
+                            Create new Event
+                        </button>
+                    </div>
+                {% endif %}
+
+                {% if events %}
+                {% for event in events %}
+                    <div class="row border rounded p-3 mb-3 shadow-sm bg-white bg-opacity-40 align-items-center">
+                        <div class="col-md-6 text-start" style="max-width: 50%;">
+                            <h5 class="fw-bold">{{ event.event_title }}</h5>
+                            <p><strong>Dates:</strong> 
+                                {{ event.event_start_date.strftime('%d/%m/%Y %H:%M') }}
+                                {% if event.event_end_date %} - {{ event.event_end_date.strftime('%d/%m/%Y %H:%M') }}{% endif %}
+                            </p>
+                            <p><strong>Location:</strong> {{ event.event_location }}</p>
+                            <p><strong>Description:</strong> {{ event.event_description }}</p>
+                        </div>
+            
+                        <div class="col-md-3 d-flex justify-content-end align-items-center" style="max-width: 25%; padding-right: 15px;">
+                            {% if event.event_photos %}
+                                {% set photos = event.event_photos if event.event_photos is iterable else event.event_photos | fromjson %}
+                                {% if photos|length > 1 %}
+                                    <div id="carousel-{{ event.event_id }}" class="carousel slide" data-bs-ride="carousel">
+                                        <div class="carousel-inner rounded">
+                                            {% for photo in photos[:5] %}
+                                                <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+                                                    <img src="{{ photo.event_photo_address }}" class="d-block w-100 img-fluid" style="max-height: 180px; object-fit: cover;">
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ event.event_id }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ event.event_id }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <img src="{{ photos[0].event_photo_address }}" class="img-fluid rounded" style="max-height: 180px; object-fit: cover;">
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted fst-italic">No image</p>
+                            {% endif %}
+                        </div>
+            
+                        <div class="col-md-3 d-flex flex-column justify-content-center align-items-end" style="max-width: 25%;">
+                            {% if event.can_delete %}
+                                <button type="button" class="btn btn-outline-danger btn-sm mb-3 w-100" onclick="deleteEvent('{{ event.event_id }}', '{{ event.journey_id }}')">
+                                    <i class="bi bi-trash-fill"></i> Delete
+                                </button>
+                            {% endif %}
+
+                            {% if event.can_edit %}
+                                <button type="button" class="btn btn-outline-success btn-sm w-100" data-event='{{ event | tojson | safe }}' onclick="editEvent(this)">
+                                    <i class="bi bi-pencil-fill"></i> Edit
+                                </button>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <form method="POST" action="/event/like" class="like-form me-2" data-event-id="{{ event.event_id }}">
+                                <input type="hidden" name="event_id" value="{{ event.event_id }}">
+                                <button type="submit" class="btn p-0 border-0 bg-transparent like-btn">
+                                    <i class="bi bi-heart{% if event.liked_by_user %}-fill text-danger{% endif %}"></i>
+                                </button>
+                            </form>
+                            <span class="like-count" id="like-count-{{ event.event_id }}">{{ event.like_count or 0 }}</span>
+                        </div>
+                        
+                        <div class="mt-3 text-start ps-2">
+                            <h6 class="text-success fw-bold">Comments</h6>
+                             <div class="border-start ps-3 mb-2">
+                                {% for comment in event_comments[event.event_id] %}
+                                    <div class="border rounded p-2 mb-2 bg-white bg-opacity-75">
+                                        <strong class="text-dark">{{ comment.user_name }}</strong>
+                                        <small class="text-muted ms-2">{{ comment.created_at }}</small>
+                                        <div class="text-break">{{ comment.text }}</div>
+                                        <div class="mb-1">
+                                            <div class="d-flex align-items-center mt-1">
+                                                <!-- Like form -->
+                                                <form method="POST" action="/comment/like" class="comment-like-form me-2" data-comment-id="{{ comment.comment_id }}">
+                                                    <input type="hidden" name="comment_id" value="{{ comment.comment_id }}">
+                                                    <button type="submit" class="btn p-0 border-0 bg-transparent comment-like-btn">
+                                                        <i class="bi bi-heart{% if comment.liked_by_user %}-fill text-danger{% endif %}"></i>
+                                                    </button>
+                                                </form>
+                                                <span class="comment-like-count me-3" id="comment-like-count-{{ comment.comment_id }}">{{ comment.like_count or 0 }}</span>
+                                            
+                                                <!-- Dislike form -->
+                                                <form method="POST" action="/comment/dislike" class="comment-dislike-form me-2" data-comment-id="{{ comment.comment_id }}">
+                                                    <input type="hidden" name="comment_id" value="{{ comment.comment_id }}">
+                                                    <button type="submit" class="btn p-0 border-0 bg-transparent comment-dislike-btn">
+                                                        <i class="bi bi-hand-thumbs-down{% if comment.disliked_by_user %}-fill text-primary{% endif %}"></i>
+                                                    </button>
+                                                </form>
+                                                <span class="comment-dislike-count" id="comment-dislike-count-{{ comment.comment_id }}">{{ comment.dislike_count or 0 }}</span>
+                                            </div>
+
+                                            <div class="mt-1 d-flex align-items-center">
+                                                <select class="form-select form-select-sm report-reason me-2" style="width: auto;"
+                                                    {% if comment.has_reported %}disabled{% endif %}>
+                                                    <option value="">Report</option>
+                                                    <option value="spam">Spam</option>
+                                                    <option value="offensive">Offensive</option>
+                                                    <option value="abusive">Abusive</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                                <button class="btn btn-outline-danger btn-sm report-btn"
+                                                        data-comment-id="{{ comment.comment_id }}"
+                                                        {% if comment.has_reported %}disabled{% endif %}>
+                                                    Report
+                                                </button>
+                                            </div>
+                                        </div>    
+                                    </div>
+                                {% else %}
+                                    <div class="text-muted fst-italic">No comments yet.</div>
+                                {% endfor %}
+                            </div>
+
+                            <form class="comment-form" method="POST" action="/api/event/comment">
+                                <input type="hidden" name="event_id" value="{{ event.event_id }}">
+                                <div class="mb-2">
+                                    <textarea name="comment_text" class="form-control" rows="2" placeholder="Write a comment..." required></textarea>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">Post Comment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+                {% else %}
+                    <h4 class="text-success"><strong>No events in this journey yet.</strong></h4>
+                {% endif %}
+            
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // find all likes on the page
+        var likeForms = document.querySelectorAll(".like-form");
+    
+        likeForms.forEach(function (form) {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // do not post fegular form
+    
+                var eventId = form.dataset.eventId;
+                var button = form.querySelector("button");
+                var icon = button.querySelector("i");
+                var countSpan = document.getElementById("like-count-" + eventId);
+    
+                var formData = new FormData();
+                formData.append("event_id", eventId);
+    
+                // send request
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/event/like");
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        var result = JSON.parse(xhr.responseText);
+    
+                        if (result.success) {
+                            // change icon
+                            if (result.liked) {
+                                icon.classList.remove("bi-heart");
+                                icon.classList.add("bi-heart-fill", "text-danger");
+                            } else {
+                                icon.classList.remove("bi-heart-fill", "text-danger");
+                                icon.classList.add("bi-heart");
+                            }
+    
+                            // update likes number
+                            countSpan.textContent = result.like_count;
+                        } else {
+                            alert("Error: " + result.message);
+                        }
+                    } else {
+                        alert("Error when cklicking like.");
+                    }
+                };
+                xhr.send(formData);
+            });
+        });
+    });
+
+
+    document.addEventListener("click", async function (e) {
+        const likeBtn = e.target.closest(".comment-like-form button");
+        const dislikeBtn = e.target.closest(".comment-dislike-form button");
+
+        if (likeBtn || dislikeBtn) {
+            e.preventDefault();
+            
+            const form = e.target.closest("form");
+            const commentId = form.dataset.commentId;
+            const icon = form.querySelector("i");
+
+            const isLike = likeBtn !== null;
+            const url = isLike ? "/comment/like" : "/comment/dislike";
+
+            const likeSpan = document.getElementById("comment-like-count-" + commentId);
+            const dislikeSpan = document.getElementById("comment-dislike-count-" + commentId);
+
+            const likeIcon = document.querySelector(`#comment-like-count-${commentId}`).previousElementSibling.querySelector("i");
+            const dislikeIcon = document.querySelector(`#comment-dislike-count-${commentId}`).previousElementSibling.querySelector("i");
+
+            const formData = new FormData();
+            formData.append("comment_id", commentId);
+
+            try {
+                const res = await fetch(url, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    // UPDATE ICONS!!
+                    if (isLike) {
+                        // like
+                        likeIcon.classList.remove("bi-heart", "bi-heart-fill", "text-danger");
+                        likeIcon.classList.add(result.liked ? "bi-heart-fill" : "bi-heart");
+                        if (result.liked) likeIcon.classList.add("text-danger");
+
+                        // remove dislike icon
+                        dislikeIcon.classList.remove("bi-hand-thumbs-down-fill", "text-primary");
+                        dislikeIcon.classList.add("bi-hand-thumbs-down");
+                    } else {
+                        // dislike
+                        dislikeIcon.classList.remove("bi-hand-thumbs-down", "bi-hand-thumbs-down-fill", "text-primary");
+                        dislikeIcon.classList.add(result.disliked ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down");
+                        if (result.disliked) dislikeIcon.classList.add("text-primary");
+
+                        // remove like icon
+                        likeIcon.classList.remove("bi-heart-fill", "text-danger");
+                        likeIcon.classList.add("bi-heart");
+                    }
+
+                    // update counters
+                    if (likeSpan) likeSpan.textContent = result.like_count ?? 0;
+                    if (dislikeSpan) dislikeSpan.textContent = result.dislike_count ?? 0;
+                } else {
+                    alert("Error: " + result.message);
+                }
+            } catch (err) {
+                alert("Request failed.");
+            }
+        }
+    });
+</script>
+
+</script>
+
+</script>
+    
+<script>
+
+    Dropzone.autoDiscover = false;
+
+    
+    function handleFormErrors(errData, fieldSelectors) {
+        for (const field in errData) {
+            if (fieldSelectors[field]) {
+                insertErrorTip(fieldSelectors[field], errData[field]);
+            }
+        }
+    }
+
+    
+    const createEventFieldMap = {
+        event_title: '#createEventTitle',
+        event_desc: '#createEventDescription',
+        event_start_date: '#createEventStartDate',
+        event_end_date: '#createEventEndDate',
+        event_location: '#createEventLocation',
+        event_photos: '#eventPhotoTip'
+    };
+
+    const editEventFieldMap = {
+        event_title: '#editEventTitle',
+        event_desc: '#editEventDescription',
+        event_start_date: '#editEventStartDate',
+        event_end_date: '#editEventEndDate',
+        event_location: '#editEventLocation',
+        event_photos: '#eventPhotoTip'
+    };
+
+    document.getElementById('createEventModal').addEventListener('hidden.bs.modal', function () {
+        const form = document.getElementById('createEventForm');
+        form.reset();
+
+        if (window.createDropzone) {
+            window.createDropzone.removeAllFiles(true);
+            window.createDropzone.files.length = 0;
+        }
+
+        clearErrorOnInput('#createEventTitle');
+        clearErrorOnInput('#createEventDescription');
+        clearErrorOnInput('#createEventStartDate');
+        clearErrorOnInput('#createEventEndDate');
+        clearErrorOnInput('#createEventLocation');
+        clearErrorOnInput('#eventPhotoTip');
+    });
+
+    
+    document.getElementById('editEventModal').addEventListener('hidden.bs.modal', function () {
+        const form = document.getElementById('editEventForm');
+        form.reset();
+
+        if (window.editDropzone) {
+            window.editDropzone.removeAllFiles(true);
+            window.editDropzone.files.length = 0;
+        }
+
+        clearErrorOnInput('#editEventTitle');
+        clearErrorOnInput('#editEventDescription');
+        clearErrorOnInput('#editEventStartDate');
+        clearErrorOnInput('#editEventEndDate');
+        clearErrorOnInput('#editEventLocation');
+        clearErrorOnInput('#eventPhotoTip');
+    });
+
+
+    document.getElementById("createEventLocation").addEventListener("focus", async () => {
+        const datalist = document.getElementById("locationOptions");
+        getFetch('/api/event/locations', {
+		}).onSuccess(data => {                
+			const datalist = document.getElementById("locationOptions");
+            datalist.innerHTML = "";
+            data.data.forEach(loc => {
+                const opt = document.createElement("option");
+                opt.value = loc.name || loc;
+                datalist.appendChild(opt);
+            });
+		})
+    });
+
+    document.getElementById("editEventLocation").addEventListener("focus", async () => {
+        const datalist = document.getElementById("locationOptions");
+        getFetch('/api/event/locations', {
+		}).onSuccess(data => {                
+			const datalist = document.getElementById("locationOptions");
+            datalist.innerHTML = "";
+            data.data.forEach(loc => {
+                const opt = document.createElement("option");
+                opt.value = loc.name || loc;
+                datalist.appendChild(opt);
+            });
+		})
+    });
+
+    Dropzone.autoDiscover = false;
+
+    function resetDropzone(areaId, instanceName) {
+        const area = document.getElementById(areaId);
+
+        if (window[instanceName]) {
+            window[instanceName].destroy();
+            window[instanceName] = null;
+        }
+
+        area.innerHTML = '';
+        area.className = 'dropzone';
+        delete area.dropzone;
+        const index = Dropzone.instances.findIndex(dz => dz.element === area);
+        if (index !== -1) Dropzone.instances.splice(index, 1);
+    }
+
+
+    function onCreactEventClick() {
+        window.createEventPhotoIds = [];
+        const modalEl = document.getElementById('createEventModal');
+        resetDropzone('photoUploadArea', 'createDropzone');
+        window.createEventPhotoIds = [];
+
+        const dz = new Dropzone("#photoUploadArea", {
+            url: "/api/event/addEventPhoto",
+            paramName: "event_photo",
+            maxFilesize: 5,
+            acceptedFiles: "image/*",
+            uploadMultiple: false,
+            autoProcessQueue: true,
+            parallelUploads: 1,
+            addRemoveLinks: true,
+
+            init: function () {
+                new Sortable(this.element, {
+                    draggable: ".dz-preview"
+                });
+
+                this.on("sending", function (file, xhr, formData) {
+                    formData.set("event_id", 0);
+                });
+
+                this.on("success", function (file, response) {
+                    if (response?.data) {
+                        file.uploaded_id = response.data;
+                        window.createEventPhotoIds.push(response.data);
+                    }
+                });
+
+                this.on("removedfile", function (file) {
+                    if (file.uploaded_id) {
+                        const idx = window.createEventPhotoIds.indexOf(file.uploaded_id);
+                        if (idx !== -1) window.createEventPhotoIds.splice(idx, 1);
+                        getFetch("/api/event/deleteEventPhoto?event_photo_id=" + file.uploaded_id, {});
+                    }
+                });
+            }
+        });
+
+        window.createDropzone = dz;
+
+        const form = document.getElementById("createEventForm");
+        form.removeEventListener("submit", window._createSubmitHandler);
+
+        window._createSubmitHandler = function onSubmit(e) {
+            e.preventDefault();
+            const params = new URLSearchParams(new FormData(form));  
+            window.createEventPhotoIds.forEach(id => {
+                params.append("event_photo_ids", id);
+            });
+
+            formFetch("/api/event/add", {
+                body: params.toString()
+            }).onSuccess(() => {
+                window.location.href = window.location.pathname + "?info=event add successfully";
+            }).onBadRequest(data => {
+                if (data.err) handleFormErrors(data.err, createEventFieldMap);
+            }).onNotAllowed(data => {
+                showErrorToast(data.err, 5000);
+            });
+        };
+
+        form.addEventListener("submit", window._createSubmitHandler);
+        new bootstrap.Modal(modalEl).show();
+    }
+
+    function editEvent(btn) {
+        const data = JSON.parse(btn.dataset.event);
+        document.getElementById('eventId').value = data.event_id;
+        document.getElementById('editJourneyId').value = data.journey_id;
+        document.getElementById('editEventTitle').value = data.event_title || '';
+        document.getElementById('editEventDescription').value = data.event_description || '';
+        document.getElementById('editEventStartDate').value = formatDateTimeToInput(data.event_start_date);
+        document.getElementById('editEventEndDate').value = formatDateTimeToInput(data.event_end_date);
+        document.getElementById('editEventLocation').value = data.event_location || '';
+
+        window.editEventPhotoIds = []; // reset
+
+        const modal = new bootstrap.Modal(document.getElementById('editEventModal'));
+        modal.show();
+
+        resetDropzone('editPhotoUploadArea', 'editDropzone');
+
+        const dz = new Dropzone("#editPhotoUploadArea", {
+            url: "/api/event/addEventPhoto",
+            paramName: "event_photo",
+            maxFilesize: 5,
+            acceptedFiles: "image/*",
+            uploadMultiple: false,
+            autoProcessQueue: true,
+            parallelUploads: 1,
+            addRemoveLinks: true,
+
+            init: function () {
+                new Sortable(this.element, {
+                    draggable: ".dz-preview"
+                });
+
+                this.on("sending", function (file, xhr, formData) {
+                    formData.set("event_id", 0);
+                });
+
+                this.on("success", function (file, response) {
+                    if (response?.data != null) {
+                        file.uploaded_id = response.data;
+                        window.editEventPhotoIds.push(response.data);
+                    }
+                });
+
+                this.on("removedfile", function (file) {
+                    if (file.uploaded_id != null) {
+                        const idx = window.editEventPhotoIds.indexOf(file.uploaded_id);
+                        if (idx !== -1) window.editEventPhotoIds.splice(idx, 1);
+                        fetch("/api/event/deleteEventPhoto?event_photo_id=" + encodeURIComponent(file.uploaded_id), {
+                            method: "GET"
+                        }).catch(console.error);
+                    }
+                });
+
+                if (Array.isArray(data.event_photos)) {
+                    data.event_photos.forEach((photo, index) => {
+                        fetch(photo.event_photo_address)
+                            .then(res => res.blob())
+                            .then(blob => {
+                                const fileName = `old_photo_${index + 1}.${blob.type.split('/')[1] || 'jpg'}`;
+                                const file = new File([blob], fileName, { type: blob.type });
+
+                                file.uploaded_id = photo.event_photo_id;
+                                window.editEventPhotoIds.push(photo.event_photo_id);
+
+                                dz.emit("addedfile", file);
+                                dz.emit("thumbnail", file, URL.createObjectURL(blob));
+                                file.previewElement.classList.add("dz-success", "dz-complete");
+                                dz.files.push(file);
+                            });
+                    });
+                }
+            }
+        });
+
+        window.editDropzone = dz;
+
+        const form = document.getElementById("editEventForm");
+        form.removeEventListener("submit", window._editSubmitHandler);
+
+        window._editSubmitHandler = function onEditSubmit(e) {
+            e.preventDefault();
+            const params = new URLSearchParams(new FormData(form));
+
+            window.editEventPhotoIds.forEach(id => {
+                params.append("event_photo_ids", id);
+            });
+
+            formFetch("/api/event/edit", {
+                body: params.toString()
+            }).onSuccess(() => {
+                window.location.href = window.location.pathname + "?info=event add successfully";
+            }).onBadRequest(data => {
+                if (data.err) handleFormErrors(data.err, createEventFieldMap);
+            }).onNotAllowed(data => {
+                showErrorToast(data.err, 5000);
+            });
+        };
+
+        form.addEventListener("submit", window._editSubmitHandler);
+    }
+
+
+
+    function deleteEvent(eventId, journeyId) {
+        if (!confirm("Are you sure you want to delete this event?")) {
+            return;
+        }
+        const params = new URLSearchParams();
+        params.append("event_id", eventId);
+        params.append("journey_id", journeyId);
+        formFetch("/api/event/delete", {
+            body: params.toString()
+        }).onSuccess((data) => {
+            const redirectUrl = window.location.pathname + "?info=" + encodeURIComponent("event delete successfully");
+            window.location.href = redirectUrl;
+        }).onNotAllowed((data) => {
+            const errData = data.err
+            const redirectUrl = window.location.pathname + "?error=" + encodeURIComponent(errData);
+            window.location.href = redirectUrl;
+        }).onUnAuth((data) => {
+            window.location.href = '/login'
+        })
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".comment-form").forEach(form => {
+                form.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData(form);
+                    const response = await fetch("/api/event/comment", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        const text = formData.get("comment_text");
+                        const now = new Date();
+                        const formattedTime = now.getFullYear() + "-" +
+                            String(now.getMonth() + 1).padStart(2, '0') + "-" +
+                            String(now.getDate()).padStart(2, '0') + " " +
+                            String(now.getHours()).padStart(2, '0') + ":" +
+                            String(now.getMinutes()).padStart(2, '0');
+
+                    const newComment = document.createElement("div");
+                    newComment.classList.add("mb-1");
+                    newComment.innerHTML = `
+                        <strong class="text-dark">You</strong>
+                        <small class="text-muted ms-2">${formattedTime}</small>
+                        <div class="text-break">${text}</div>
+                    `;
+
+                    const commentList = form.previousElementSibling;
+                    const emptyMsg = commentList.querySelector(".fst-italic");
+                    if (emptyMsg) emptyMsg.remove();
+                    commentList.appendChild(newComment);
+
+                    form.reset();
+                } else {
+                    alert("Failed to post comment.");
+                }
+            });
+        });
+    });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".report-btn").forEach(button => {
+        button.addEventListener("click", async function () {
+            const commentId = this.dataset.commentId;
+            const select = this.previousElementSibling;
+            const reason = select.value;
+
+            if (!reason) {
+                alert("Please select a reason before reporting.");
+                return;
+            }
+
+            const response = await fetch("/api/event/reportComment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    comment_id: parseInt(commentId),
+                    reason: reason
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                this.disabled = true;
+                select.disabled = true;
+            } else {
+                alert(result.message);
+            }
+        });
+    });
+});
+</script>
+
+<script>
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted || (window.performance && performance.getEntriesByType("navigation")[0].type === "back_forward")) {
+        location.reload();
+      }
+    });
+</script>
+
+    <style>
+        /* Dropzone 容器 */
+        .dropzone {
+            border: 2px dashed #198754;
+            border-radius: 12px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: start;
+            min-height: 160px;
+            transition: background-color 0.2s ease;
+        }
+
+        /* 图片缩略图容器 */
+        .dropzone .dz-preview {
+            width: 120px;
+            height: auto;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: 12px;
+            padding: 6px;
+            transition: transform 0.2s;
+        }
+
+        /* 悬停效果 */
+        .dropzone .dz-preview:hover {
+            transform: scale(1.03);
+        }
+
+        /* 缩略图图像区域 */
+        .dropzone .dz-image {
+            width: 100%;
+            height: 80px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .dropzone .dz-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+        }
+
+        /* 文件大小文本 */
+        .dropzone .dz-size {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        /* 隐藏文件名 */
+        .dropzone .dz-filename {
+            display: none;
+        }
+
+        /* 删除按钮移到底部 */
+        .dropzone .dz-remove {
+            position: static;
+            margin-top: 4px;
+            font-size: 13px;
+            color: #dc3545;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* 禁用 Dropzone 默认进度状态样式 */
+        .dropzone .dz-progress,
+        .dropzone .dz-success-mark,
+        .dropzone .dz-error-mark,
+        .dropzone .dz-error-message {
+            display: none !important;
+        }
+    </style>
+
+
+
+{% endblock %}

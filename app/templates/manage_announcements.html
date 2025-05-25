@@ -1,0 +1,24 @@
+{% extends "home_base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-success">📋 Manage Announcements</h2>
+        <a href="/announcements/create" class="btn btn-success">+ Create New</a>
+    </div>
+
+    {% for ann in announcements %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">{{ ann.announcement_title }}</h5>
+            <p class="card-text">{{ ann.announcement_content }}</p>
+            <small class="text-muted">Posted on: {{ ann.created_at }}</small>
+            <div class="mt-2">
+                <a href="/announcements/edit/{{ ann.announcement_id }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a href="/announcements/delete/{{ ann.announcement_id }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this announcement?');">Delete</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

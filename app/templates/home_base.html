@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block user %}
+    <a href="/profile" class="text-decoration-none d-inline-flex align-items-center gap-3 position-relative">
+
+        <!-- User avatar -->
+        {% set avatar_path = user.user_photo if user and user.user_photo else 'images/default_avatar.png' %}
+        <img src="{{ url_for('static', filename=avatar_path) }}" alt="User Avatar"
+            class="rounded-circle border border-white" width="40" height="40">
+
+        <div class="d-flex flex-column align-items-start ms-2">
+            <!-- Username -->
+            <span class="badge rounded-pill text-white text-decoration-underline cursor-pointer">
+                {{ user.user_name }}
+            </span>
+
+            <!-- User role -->
+            <span class="badge rounded-pill text-white cursor-pointer">
+                {{ user.user_role }}
+            </span>
+        </div>
+
+        <!-- Message icon with badge -->
+        <a href="{{ url_for('page.profile_messages', user_id=user.user_id) }}"
+        class="position-relative d-inline-flex align-items-center text-white text-decoration-none">
+
+            <i class="bi bi-envelope-fill fs-5"></i>  <!-- Bootstrap Icon -->
+
+            {% if unread_messages_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size: 0.6rem; padding: 0.2em 0.4em;">
+                {{ unread_messages_count }}
+                <span class="visually-hidden">unread messages</span>
+            </span>
+            {% endif %}
+        </a>
+
+    </a>
+{% endblock %}
+
+{% block info %}
+{% if user %}
+    {% if user.user_role in ['admin', 'editor','itadmin'] %}
+        <div class="badge bg-info text-white ms-3" style="font-size: 0.8rem;">
+            Premium
+        </div>
+    {% elif subscription_status %}
+        <div class="badge bg-info text-white ms-3" style="font-size: 0.8rem;">
+            {{ subscription_status|capitalize }}
+        </div>
+    {% endif %}
+
+    {% if user.user_role == 'traveller' and subscription_expiring_soon %}
+        <div class="badge text-bg-danger text-white ms-3" style="font-size: 0.8rem;">
+            Your subscription expires in {{ days_until_expiry }} day{{ 's' if days_until_expiry > 1 else '' }}.
+        </div>
+    {% endif %}
+
+    {% if latest_announcement %}
+        <div class="badge bg-warning text-dark ms-3" style="font-size: 0.8rem;">
+            📢 <strong>{{ latest_announcement.announcement_title }}</strong>
+            <a href="/announcements" class="text-decoration-underline ms-2">(View all)</a>
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block user_status %}
+<div id="statusBadge" class="text-center d-none px-3 py-2" style="
+    background-color: #f8d7da;
+    color: #842029;
+    font-size: 0.9rem;
+    border: 1px solid #f5c2c7;
+    border-radius: 0.5rem;
+    max-width: 600px;
+    margin: 0 auto 1rem auto;
+    white-space: normal;
+    line-height: 1.4;
+">
+    You have received an official warning.<br>
+    Some of the content you shared was found to be inappropriate.<br>
+    Repeated violations may result in your account being permanently banned.
+</div>
+{% endblock %}
+
+{% block menu %}
+<div class="offcanvas-body d-flex flex-column align-items-start gap-3 ps-5 div-sidemenu">
+    <ul class="nav nav-pills w-100" id="menuList">
+        <li class="nav-item w-100" id="home">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/">
+                <strong>Home</strong>
+            </a>
+        </li>
+        <li class="nav-item w-100" id="my_issues">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/my_journeys">
+                <strong>My Journeys</strong>
+            </a>
+        </li>
+        <li class="nav-item w-100" id="all_issues">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/all_journeys">
+                <strong>All Journeys</strong>
+            </a>
+        </li>
+        <li class="nav-item w-100" id="public_users">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/public_users">
+                <strong>Public Users</strong>
+            </a>
+        </li>
+        {% if user.user_role in ['admin', 'itadmin'] %}       
+            <li class="nav-item w-100" id="account-management-menu">
+                <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/accounts">
+                    <strong>User Account Management</strong>
+                </a>
+            </li>
+        {% endif %}
+        <li class="nav-item w-100" id="announcements">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/announcements">
+                <strong>📢 Announcements</strong>
+            </a>
+        </li>
+        {% if user and user.user_role in ['moderator', 'editor', 'admin'] %}
+        <li class="nav-item w-100" id="moderation-comments">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/moderation_comments">
+                <strong>Reported Comments</strong>
+            </a>
+        </li>
+        {% endif %}
+        
+        {% if user and user.user_role == 'admin' %}
+        <li class="nav-item w-100" id="escalated-reports">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/admin/escalated_reports">
+                <strong>Escalated Reports</strong>
+            </a>
+        </li>
+        {% endif %}
+
+        <li class="nav-item w-100" id="my_issues">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/profile">
+                <strong>My Profile</strong>
+            </a>
+        </li>
+        
+         <li class="nav-item w-100" id="my_issues">
+            <a class="nav-link text-start text-success d-flex align-items-center gap-3" href="/helpdesk">
+                <strong>Help Desk</strong>
+            </a>
+        </li>
+        <li class="nav-item w-100" id="logout">
+            <a class="nav-link text-start text-danger d-flex align-items-center gap-3" onclick="handleSignOut()" style="cursor: pointer;">
+                <strong>Log Out</strong>
+            </a>
+        </li>
+
+        {% if user and user.user_role == 'traveller' %}
+        <li class="nav-item w-100 mt-3" id="subscription">
+            <a class="nav-link text-start d-flex align-items-center gap-3 px-3 py-2 border border-warning rounded bg-warning bg-opacity-25" href="/subscription">
+                <strong class="text-warning">🌟 Premium</strong>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block content %}
+{% block subContent %}{% endblock %}
+
+<script>
+    window.addEventListener("load", function () {
+        getFetch('/api/auth/current', {}).onSuccess((data) => {
+            const currentUser = data.data;
+
+
+            const userAvatar = document.getElementById('userAvatarNav');
+            if (userAvatar) {
+                const rawPhoto = currentUser.user_photo || 'images/default_avatar.png';
+                const cleanPath = rawPhoto.replace(/^\/?static\//, '');
+                userAvatar.src = '/static/' + cleanPath;
+            }
+
+            if (currentUser.user_status === "blocked") {
+                const blockedNotice = document.getElementById("statusBadge");
+                blockedNotice?.classList.remove("d-none");
+            }
+        });
+    });
+
+    function handleSignOut() {
+        formFetch('/api/auth/logout', {}).onSuccess((data) => {
+            const redirectUrl = "/login?info=" + encodeURIComponent("you have logged out successfully");
+            window.location.href = redirectUrl;
+        });
+    }
+</script>
+
+{% endblock %}

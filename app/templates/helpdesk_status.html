@@ -1,0 +1,52 @@
+{% block title %}
+My helpdesk
+{% endblock %}
+
+{% block subContent %}
+<div class="container my-5">
+    <!-- Current Helpdesk Requests Block -->
+    <div class="card shadow mb-5">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Current Requests</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Title</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                        <th>Assigned</th>
+                        <th>Assigned_status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for status in summary_search %}
+                    <tr>
+                        <td>{{ status.request_user_name }}</td>
+                        <td>{{ status.request_title }}</td>
+                        <td>{{ status.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td><span class="badge bg-info">{{ status.request_status }}</span></td>
+                        <td>
+                            {{ status.request_assigned_name or status.candidate_name or 'Unassigned' }}
+                        </td>
+                        <td>
+                            {% if status.request_assigned_to %}
+                            <span class="badge bg-success">Assigned</span>
+                            {% elif status.request_take_candidate_id %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Unassigned</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

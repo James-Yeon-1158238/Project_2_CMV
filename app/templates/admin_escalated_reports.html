@@ -1,0 +1,72 @@
+{% extends "home_base.html" %}
+
+{% block title %}Escalated Reports{% endblock %}
+
+{% block subContent %}
+<div class="container my-5">
+    <h2 class="text-center text-danger mb-4">Escalated Comment Reports</h2>
+
+    {% if reports %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Comment ID</th>
+                    <th>Text</th>
+                    <th>Reason</th>
+                    <th>Reporter</th>
+                    <th>Reported At</th>
+                    <th>Commenter</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr class="{% if r.is_hidden %}table-secondary text-muted{% endif %}">
+                    <td>{{ r.comment_id }}</td>
+                    <td>{{ r.comment_text }}</td>
+                    <td>{{ r.reason }}</td>
+                    <td>{{ r.reporter }}</td>
+                    <td>{{ r.created_at }}</td>
+                    <td>
+                        {{ r.commenter_name }}
+                        <form method="POST" action="{{ url_for('page.update_user_staus_page') }}" class="mt-1">
+                            <input type="hidden" name="user_id" value="{{ r.commenter_id }}">
+                            <input type="hidden" name="new_status" value="banned">
+                            <button class="btn btn-sm btn-danger" onclick="return confirm('Ban the commenter?');">🚫 Ban</button>
+                        </form>
+                    </td>
+                    <td>
+                        {% if r.is_hidden %}
+                            <button class="btn btn-sm btn-secondary mb-1" disabled>Already Hidden</button>
+                        {% else %}
+                            <form method="POST" action="{{ url_for('page.admin_hide_comment') }}" style="display:inline;">
+                                <input type="hidden" name="comment_id" value="{{ r.comment_id }}">
+                                <button class="btn btn-sm btn-outline-danger mb-1">Hide</button>
+                            </form>
+                        {% endif %}
+                    
+                        <form method="POST" action="{{ url_for('page.dismiss_escalation') }}" style="display:inline;">
+                            <input type="hidden" name="report_id" value="{{ r.report_id }}">
+                            <button class="btn btn-sm btn-outline-secondary mb-1">Dismiss</button>
+                        </form>
+                    
+                        <form method="POST" action="{{ url_for('page.send_warning_message') }}" class="mt-2">
+                            <input type="hidden" name="comment_id" value="{{ r.comment_id }}">
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="warning_text" class="form-control" placeholder="Enter warning..." required>
+                                <button type="submit" class="btn btn-warning btn-sm"
+                                    onclick="return confirm('Are you sure you want to send this warning to the commenter?');">
+                                    Warn
+                                </button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted text-center">No escalated reports at this time.</p>
+    {% endif %}
+</div>
+{% endblock %}
