@@ -2001,7 +2001,7 @@ def helpdesk_status_staff() -> str:
     if filters:
                 query += " WHERE " + " AND ".join(filters)
 
-    query += " ORDER BY query += ORDER BY  FIELD(h.request_priority, 'high', 'medium', 'low'), created_at DESC"
+    query += " ORDER BY FIELD(h.request_priority, 'high', 'medium', 'low'), created_at DESC"
   
     cur.execute(query, params) 
     requests = cur.fetchall()
