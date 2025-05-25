@@ -8,26 +8,24 @@ My helpdesk
 <div class="container my-5">
 
     <!-- Filter + Button Row -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
 
         <!-- New Request Button -->
         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#helpdeskModal">
             <i class="bi bi-plus-circle me-1"></i> New Helpdesk Request
         </button>
+        
+        <form method="GET" action="/helpdesk/status" class="d-flex flex-wrap align-items-center gap-2 mb-0">
+    <label for="statusFilter" class="col-form-label me-2">Filter by Status:</label>
+    <select id="statusFilter" name="status" class="form-select" onchange="this.form.submit()">
+        <option value="all" {% if request.args.get('status')=='all' %}selected{% endif %}>-- All Statuses --</option>
+        <option value="new" {% if request.args.get('status')=='new' %}selected{% endif %}>New</option>
+        <option value="open" {% if request.args.get('status')=='open' %}selected{% endif %}>Open</option>
+        <option value="stalled" {% if request.args.get('status')=='stalled' %}selected{% endif %}>Stalled</option>
+        <option value="resolved" {% if request.args.get('status')=='resolved' %}selected{% endif %}>Resolved</option>
+    </select>
 
-        <form method="GET" action="/helpdesk/status" class="d-flex align-items-center gap-2 mb-0">
-            <label for="statusFilter" class="col-form-label me-2">Filter by Status:</label>
-            <select id="statusFilter" name="status" class="form-select">
-                <option value="all">-- All Statuses --</option>
-                <option value="new" {% if request.args.get('status')=='new' %}selected{% endif %}>New</option>
-                <option value="open" {% if request.args.get('status')=='open' %}selected{% endif %}>Open</option>
-                <option value="stalled" {% if request.args.get('status')=='stalled' %}selected{% endif %}>Stalled
-                </option>
-                <option value="resolved" {% if request.args.get('status')=='resolved' %}selected{% endif %}>Resolved</option>
-            </select>
-            <button type="submit" class="btn btn-outline-success">Search</button>
-        </form>
-
+</form>
     </div>
 
     <!-- Current Helpdesk Requests Block -->
@@ -37,6 +35,7 @@ My helpdesk
         </div>
         <div class="card-body">
             {% if requests %}
+            <div class="table-responsive">
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-success">
                     <tr>
@@ -45,7 +44,6 @@ My helpdesk
                         <th>Title</th>
                         <th>Description</th>
                         <th>Status</th>
-                        <!-- <th>Priority</th> -->
                         <th>Created</th>
                         <th>Assigned To</th>
                     </tr>
@@ -66,10 +64,10 @@ My helpdesk
                         <a href="{{ url_for('page.help_detail', request_id=request['request_id']) }}" 
                                        class="fw-bold text-decoration-none text-success">
                                          {{ request.request_title }}
-                                    </a>
-                        <td>
-                            {{ request.request_description[:50] }}
-                            {% if request.request_description|length > 50 %}...{% endif %}
+                        </a>
+                        </td>
+                        <td style="white-space: normal;">
+                            {{ request.request_description[:50] }}{% if request.request_description|length > 50 %}...{% endif %}
                         </td>
                         <td>
                             <span class="badge 
@@ -81,21 +79,13 @@ My helpdesk
                                 {{ request.request_status.replace('_', ' ') | capitalize }}
                             </span>
                         </td>
-                        <!-- <td>
-                            <span class="badge 
-                            {% if request.request_priority == 'high' %} bg-danger 
-                            {% elif request.request_priority == 'medium' %} bg-warning text-dark 
-                            {% else %} bg-light text-dark 
-                            {% endif %}">
-                                {{ request.request_priority | capitalize }}
-                            </span>
-                        </td> -->
                         <td>{{ request.created_at.strftime('%d/%m/%Y') }}</td>
                         <td>{{ request.request_assigned_name or 'Unassigned' }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
             {% else %}
             <p class="text-muted">There are no helpdesk requests at the moment.</p>
             {% endif %}
@@ -105,7 +95,7 @@ My helpdesk
 
 <!-- Helpdesk Request Modal -->
 <div class="modal fade" id="helpdeskModal" tabindex="-1" aria-labelledby="helpdeskModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
             <!-- Modal header -->
             <div class="modal-header bg-success text-white">
@@ -118,8 +108,7 @@ My helpdesk
             <div class="modal-body">
                 <form method="POST" action="/helpdesk/create_request">
                     <div class="row g-3">
-                        <!-- Username (read-only) -->
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-floating">
                                 <input type="text" class="form-control border-success" name="request_user_name"
                                     value="{{ user.user_name }}" readonly>
@@ -127,8 +116,7 @@ My helpdesk
                             </div>
                         </div>
 
-                        <!-- Email -->
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-floating">
                                 <input type="email" class="form-control border-success" name="request_email"
                                     value="{{ user.user_email }}" required>
@@ -136,8 +124,7 @@ My helpdesk
                             </div>
                         </div>
 
-                        <!-- Help type selector -->
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-floating">
                                 <select class="form-select border-success" name="request_type" required>
                                     <option value="" disabled selected>-- Select Type --</option>
@@ -148,8 +135,7 @@ My helpdesk
                             </div>
                         </div>
 
-                        <!-- Help category selector -->
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <div class="form-floating">
                                 <select class="form-select border-success" name="request_category" required>
                                     <option value="" disabled selected>-- Select Category --</option>
@@ -163,7 +149,6 @@ My helpdesk
                             </div>
                         </div>
 
-                        <!-- Title input -->
                         <div class="col-12">
                             <div class="form-floating">
                                 <input type="text" class="form-control border-success" name="request_title"
@@ -172,7 +157,6 @@ My helpdesk
                             </div>
                         </div>
 
-                        <!-- Description textarea -->
                         <div class="col-12">
                             <div class="form-floating">
                                 <textarea class="form-control border-success" name="request_description"

@@ -513,7 +513,7 @@ def all_journeys_search() -> str:
                     SELECT journey_id, journey_title, journey_description, updated_at,
                      journey_start_date, journey_photo_url,
                     journey_status FROM JOURNEYS where journey_title like %s 
-                    and where journey_status in('public', 'share') 
+                    and journey_status in('public', 'share') 
                     order by updated_at desc"""
 
         params = (f"%{journey_title}%",)
@@ -531,7 +531,7 @@ def all_journeys_search() -> str:
                     SELECT journey_id, journey_title, journey_description, updated_at,
                     journey_start_date, journey_photo_url,
                     journey_status FROM JOURNEYS where journey_description like %s 
-                    and  journey_status ='public' 
+                    and  journey_status in('public', 'share')
                     order by updated_at desc"""
 
         params = (f"%{journey_description}%",)
@@ -550,7 +550,7 @@ def all_journeys_search() -> str:
                     journey_start_date, journey_photo_url,
                     journey_status FROM JOURNEYS where journey_title like %s 
                     and journey_description like %s 
-                    and journey_status ='public' order by updated_at desc"""
+                    and journey_status in('public', 'share') order by updated_at desc"""
 
         params = (
             f"%{journey_title}%",

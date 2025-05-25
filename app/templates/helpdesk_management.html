@@ -7,141 +7,176 @@ My helpdesk
 {% block subContent %}
 
 <style>
+    @media (max-width: 768px) {
+        .col-20 {
+            flex: 0 0 48%;
+            max-width: 48%;
+            margin-bottom: 1rem;
+        }
+    }
+    @media (max-width: 576px) {
+        .col-20 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            margin-bottom: 1rem;
+        }
+    }
     .col-20 {
         flex: 0 0 20%;
         max-width: 20%;
+    }
+
+    .helpdesk-container {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .helpdesk-table th,
+    .helpdesk-table td {
+        white-space: nowrap;
     }
 </style>
 
 <div class="container my-5">
 
-    <div class="row mb-5 justify-content-between">
-        <!-- New -->
-        <div class="col-20">
-            <div class="card shadow text-white bg-danger">
-                <div class="card-body text-center">
-                    <h6 class="card-title mb-1"><i class="fas fa-star me-1"></i>New</h6>
-                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;" onclick="showStatusModal('new')">
-                        {{ status_summary.get('new', 0) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Open -->
-        <div class="col-20">
-            <div class="card shadow text-white bg-success">
-                <div class="card-body text-center">
-                    <h6 class="card-title mb-1"><i class="fas fa-folder-open me-1"></i>Open</h6>
-                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;" onclick="showStatusModal('open')">
-                        {{ status_summary.get('open', 0) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stalled -->
-        <div class="col-20">
-            <div class="card shadow text-dark bg-warning">
-                <div class="card-body text-center">
-                    <h6 class="card-title mb-1"><i class="fas fa-pause-circle me-1"></i>Stalled</h6>
-                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;"
-                        onclick="showStatusModal('stalled')">
-                        {{ status_summary.get('stalled', 0) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Resolved -->
-        <div class="col-20">
-            <div class="card shadow text-white bg-secondary">
-                <div class="card-body text-center">
-                    <h6 class="card-title mb-1"><i class="fas fa-check-circle me-1"></i>Resolved</h6>
-                    <div class="fw-bold" style="font-size: 1.25rem; cursor: pointer;"
-                        onclick="showStatusModal('resolved')">
-                        {{ status_summary.get('resolved', 0) }}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-20">
-            <div class="card shadow text-white bg-primary" style="cursor: pointer;" onclick="toggleTakeRequestsTable()">
-                <div class="card-body text-center">
-                    <h6 class="card-title mb-1"><i class="fas fa-user-check me-1"></i>Take Requests</h6>
-                    <div class="fw-bold" style="font-size: 1.25rem;">
-                        {{ Pending_assigns|length }}
-                    </div>
+   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3 mb-5">
+    <!-- New -->
+    <div class="col">
+        <div class="card shadow text-white bg-danger h-100">
+            <div class="card-body text-center" onclick="showStatusModal('new')" style="cursor: pointer;">
+                <h6 class="card-title mb-1"><i class="fas fa-star me-1"></i>New</h6>
+                <div class="fw-bold" style="font-size: 1.25rem;">
+                    {{ status_summary.get('new', 0) }}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Open -->
+    <div class="col">
+        <div class="card shadow text-white bg-success h-100">
+            <div class="card-body text-center" onclick="showStatusModal('open')" style="cursor: pointer;">
+                <h6 class="card-title mb-1"><i class="fas fa-folder-open me-1"></i>Open</h6>
+                <div class="fw-bold" style="font-size: 1.25rem;">
+                    {{ status_summary.get('open', 0) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stalled -->
+    <div class="col">
+        <div class="card shadow text-dark bg-warning h-100">
+            <div class="card-body text-center" onclick="showStatusModal('stalled')" style="cursor: pointer;">
+                <h6 class="card-title mb-1"><i class="fas fa-pause-circle me-1"></i>Stalled</h6>
+                <div class="fw-bold" style="font-size: 1.25rem;">
+                    {{ status_summary.get('stalled', 0) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolved -->
+    <div class="col">
+        <div class="card shadow text-white bg-secondary h-100">
+            <div class="card-body text-center" onclick="showStatusModal('resolved')" style="cursor: pointer;">
+                <h6 class="card-title mb-1"><i class="fas fa-check-circle me-1"></i>Resolved</h6>
+                <div class="fw-bold" style="font-size: 1.25rem;">
+                    {{ status_summary.get('resolved', 0) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Take Requests -->
+    <div class="col">
+        <div class="card shadow text-white bg-primary h-100">
+            <div class="card-body text-center" onclick="toggleTakeRequestsTable()" style="cursor: pointer;">
+                <h6 class="card-title mb-1"><i class="fas fa-user-check me-1"></i>Take Requests</h6>
+                <div class="fw-bold" style="font-size: 1.25rem;">
+                    {{ Pending_assigns|length }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Pending Take Requests Table -->
     {% if Pending_assigns %}
     <!-- Pending Take Requests Table -->
     <div id="takeRequestsTable" class="collapse mt-4 mb-4">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Pending Take Requests</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle mb-0">
-                        <thead class="table-success text-center">
-                            <tr>
-                                <th>Type</th>
-                                <th>Category</th>
-                                <th>Title</th>
-                                <th>Description</th>
-                                <th>Assigned</th>
-                                <th style="width: 180px;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for req in Pending_assigns %}
-                            <tr>
-                                <td class="text-center">{{ req.request_type }}</td>
-                                <td class="text-center">{{ req.request_category }}</td>
-                                <td>{{ req.request_title }}</td>
-                                <td>{{ req.request_description[:80] }}{% if req.request_description|length > 80 %}...{%
-                                    endif %}</td>
-                                <td class="text-center">{{ req.request_assigned_name or "Unassigned" }}</td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-success me-1"
-                                        onclick="respondTake({{ req.request_id }}, 'accept')">Accept</button>
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Pending Take Requests</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0 text-nowrap">
+                    <thead class="table-success text-center">
+                        <tr>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Title</th>
+                            <th class="d-none d-md-table-cell">Description</th>
+                            <th class="d-none d-sm-table-cell">Assigned</th>
+                            <th style="min-width: 120px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in Pending_assigns %}
+                        <tr>
+                            <td class="text-center">{{ req.request_type }}</td>
+                            <td class="text-center">{{ req.request_category }}</td>
+                            <td>{{ req.request_title }}</td>
+                            <td class="d-none d-md-table-cell">{{ req.request_description[:80] }}{% if req.request_description|length > 80 %}...{% endif %}</td>
+                            <td class="text-center d-none d-sm-table-cell">{{ req.request_assigned_name or "Unassigned" }}</td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center flex-wrap gap-1">
+                                    <button class="btn btn-sm btn-success"
+                                        onclick="respondTake({{ req.request_id }}, 'accept')">✔</button>
                                     <button class="btn btn-sm btn-danger"
-                                        onclick="respondTake({{ req.request_id }}, 'decline')">Decline</button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                        onclick="respondTake({{ req.request_id }}, 'decline')">✖</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
     {% endif %}
 
     <!-- Current Helpdesk Requests Block -->
     <div class="card shadow mb-5 mt-4">
-        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Current Requests</h5>
-
-            <div class="btn-group" role="group">
-                <a href="{{ url_for('page.helpdesk_status_staff', status='all') }}"
-                    class="btn btn-light btn-sm {% if request.args.get('status') == 'all' or not request.args.get('status') %}active{% endif %}">All</a>
-                <a href="{{ url_for('page.helpdesk_status_staff', status='new') }}"
-                    class="btn btn-light btn-sm {% if request.args.get('status') == 'new' %}active{% endif %}">New</a>
-                <a href="{{ url_for('page.helpdesk_status_staff', status='open') }}"
-                    class="btn btn-light btn-sm {% if request.args.get('status') == 'open' %}active{% endif %}">Open</a>
-                <a href="{{ url_for('page.helpdesk_status_staff', status='stalled') }}"
-                    class="btn btn-light btn-sm {% if request.args.get('status') == 'stalled' %}active{% endif %}">Stalled</a>
-                <a href="{{ url_for('page.helpdesk_status_staff', status='resolved') }}"
-                    class="btn btn-light btn-sm {% if request.args.get('status') == 'resolved' %}active{% endif %}">Resolved</a>
-
-            </div>
+<div class="card-header bg-success text-white">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+        <h5 class="mb-0">Current Requests</h5>
+        <div class="btn-group flex-wrap" role="group">
+            <a href="{{ url_for('page.helpdesk_status_staff', status='all') }}"
+               class="btn btn-light btn-sm {% if request.args.get('status') == 'all' or not request.args.get('status') %}active{% endif %}">
+               All
+            </a>
+            <a href="{{ url_for('page.helpdesk_status_staff', status='new') }}"
+               class="btn btn-light btn-sm {% if request.args.get('status') == 'new' %}active{% endif %}">
+               New
+            </a>
+            <a href="{{ url_for('page.helpdesk_status_staff', status='open') }}"
+               class="btn btn-light btn-sm {% if request.args.get('status') == 'open' %}active{% endif %}">
+               Open
+            </a>
+            <a href="{{ url_for('page.helpdesk_status_staff', status='stalled') }}"
+               class="btn btn-light btn-sm {% if request.args.get('status') == 'stalled' %}active{% endif %}">
+               Stalled
+            </a>
+            <a href="{{ url_for('page.helpdesk_status_staff', status='resolved') }}"
+               class="btn btn-light btn-sm {% if request.args.get('status') == 'resolved' %}active{% endif %}">
+               Resolved
+            </a>
         </div>
+    </div>
+</div>
         <div class="card-body">
             {% if requests %}
             <div style="max-height: 500px; overflow-y: auto;">
