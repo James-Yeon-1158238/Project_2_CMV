@@ -1007,7 +1007,8 @@ def Premium_journey_create() -> dict:
             upload_path = os.path.join("app","static", "premium", filename)
             os.makedirs(os.path.dirname(upload_path), exist_ok=True)
             photo_file.save(upload_path)
-            photo_url = f"../static/premium/{filename}"
+            # photo_url = f"../static/premium/{filename}"
+            photo_url = url_for('static', filename=f"premium/{filename}")
             
 
         # Insert into DB
